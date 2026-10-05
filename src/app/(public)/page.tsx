@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ProductCard } from '@/components/shop/ProductCard'
-import { Button } from '@/components/ui/Button'
+import { Hero } from '@/components/shop/Hero'
+import { ArrowRight } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,57 +18,108 @@ export default async function HomePage() {
     .from('products')
     .select('id, name, slug, price, compare_price, images')
     .eq('status', 'active')
-    .eq('featured', true)
     .limit(8)
+
+  const categoryEmojis: Record<string, string> = {
+    cosmetics: '💄',
+    clothing: '👕',
+    electronics: '📱',
+    general: '🛒',
+  }
 
   return (
     <div>
-      {/* Hero */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">mizanmart</h1>
-          <p className="text-xl md:text-2xl mb-8 opacity-90">
-            Cosmetics · Clothing · Electronics · General
-          </p>
-          <Link href="/products">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-              Shop Now
-            </Button>
-          </Link>
-        </div>
-      </section>
+      <Hero />
 
-      {/* Categories */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold mb-6">Categories</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {categories?.map((cat) => (
+      <section className="section-pad">
+        <div className="container-main">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black text-[var(--color-text)]">
+                Shop by Category
+              </h2>
+              <p className="text-sm text-[var(--color-text-muted)] mt-1">
+                Explore our wide range of products
+              </p>
+            </div>
             <Link
-              key={cat.id}
-              href={`/products?category=${cat.slug}`}
-              className="p-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-blue-500 hover:shadow-lg transition text-center"
+              href="/products"
+              className="text-sm font-semibold text-[var(--color-primary)] hover:underline flex items-center gap-1"
             >
-              <div className="text-4xl mb-2">
-                {cat.slug === 'cosmetics' ? '💄' : cat.slug === 'clothing' ? '👕' : cat.slug === 'electronics' ? '📱' : '🛒'}
-              </div>
-              <div className="font-medium">{cat.name}</div>
+              View All <ArrowRight size={14} />
             </Link>
-          ))}
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {categories?.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/products?category=${cat.slug}`}
+                className="category-card block bg-[var(--color-surface)] border border-[var(--color-border)] p-6 text-center"
+              >
+                <div className="text-5xl mb-3">
+                  {categoryEmojis[cat.slug] || '🛍️'}
+                </div>
+                <div className="font-bold text-[var(--color-text)]">
+                  {cat.name}
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Featured Products</h2>
-          <Link href="/products" className="text-blue-600 hover:underline text-sm">
-            View all →
-          </Link>
+      <section className="section-pad bg-[var(--color-surface)]">
+        <div className="container-main">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black text-[var(--color-text)]">
+                Trending Products
+              </h2>
+              <p className="text-sm text-[var(--color-text-muted)] mt-1">
+                Most popular this week
+              </p>
+            </div>
+            <Link
+              href="/products"
+              className="text-sm font-semibold text-[var(--color-primary)] hover:underline flex items-center gap-1"
+            >
+              View All <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+            {featured?.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {featured?.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+      </section>
+
+      <section className="section-pad">
+        <div className="container-main">
+          <div
+            className="rounded-2xl p-8 md:p-12 text-center text-white relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #C62828 0%, #8E0000 100%)' }}
+          >
+            <div className="relative z-10">
+              <span className="inline-block text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full mb-3 bg-white/20">
+                Limited Time Offer
+              </span>
+              <h3 className="text-3xl md:text-5xl font-black mb-3">
+                Up to 50% OFF
+              </h3>
+              <p className="text-base md:text-lg opacity-90 mb-6">
+                On selected items across all categories
+              </p>
+              <Link
+                href="/products"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[var(--color-primary)] rounded-full font-bold text-sm hover:bg-yellow-300 transition-all"
+              >
+                Shop Now <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
     </div>

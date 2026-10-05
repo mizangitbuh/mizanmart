@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ProductCard } from '@/components/shop/ProductCard'
+import { Filter, SlidersHorizontal } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,55 +35,81 @@ export default async function ProductsPage({ searchParams }: Props) {
 
   const { data: products } = await query
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">
-        {params.category
-          ? categories?.find((c) => c.slug === params.category)?.name || 'Products'
-          : 'All Products'}
-      </h1>
+  const currentCategory = params.category
+    ? categories?.find((c) => c.slug === params.category)?.name
+    : 'All Products'
 
-      {/* Category filter */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        <Link
-          href="/products"
-          className={`px-4 py-2 rounded-full text-sm border transition ${
-            !params.category
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-blue-500'
-          }`}
-        >
-          All
-        </Link>
-        {categories?.map((cat) => (
-          <Link
-            key={cat.id}
-            href={`/products?category=${cat.slug}`}
-            className={`px-4 py-2 rounded-full text-sm border transition ${
-              params.category === cat.slug
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-blue-500'
-            }`}
-          >
-            {cat.name}
-          </Link>
-        ))}
+  return (
+    <div className="min-h-screen">
+      {/* Page Header */}
+      <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
+        <div className="container-main py-6">
+          <div className="flex items-center gap-2 text-sm text-[var(--color-text-muted)] mb-2">
+            <Link href="/" className="hover:text-[var(--color-primary)]">Home</Link>
+            <span>/</span>
+            <span className="text-[var(--color-text)] font-medium">{currentCategory}</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-black text-[var(--color-text)]">
+            {params.q ? `Search: "${params.q}"` : currentCategory}
+          </h1>
+          <p className="text-sm text-[var(--color-text-muted)] mt-1">
+            {products?.length || 0} products found
+          </p>
+        </div>
       </div>
 
-      {products && products.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+      <div className="container-main py-6">
+        {/* Category Filters */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">
+          <SlidersHorizontal size={16} className="text-[var(--color-text-muted)] flex-shrink-0" />
+          <Link
+            href="/products"
+            className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+              !params.category
+                ? 'bg-[var(--color-primary)] text-white'
+                : 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] hover:border-[var(--color-primary)]'
+            }`}
+          >
+            All
+          </Link>
+          {categories?.map((cat) => (
+            <Link
+              key={cat.id}
+              href={`/products?category=${cat.slug}`}
+              className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+                params.category === cat.slug
+                  ? 'bg-[var(--color-primary)] text-white'
+                  : 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] hover:border-[var(--color-primary)]'
+              }`}
+            >
+              {cat.name}
+            </Link>
           ))}
         </div>
-      ) : (
-        <div className="text-center py-20 text-gray-500">
-          <p className="text-xl mb-2">No products found</p>
-          <Link href="/products" className="text-blue-600 hover:underline">
-            View all products
-          </Link>
-        </div>
-      )}
+
+        {/* Products Grid */}
+        {products && products.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20">
+            <Filter size={48} className="mx-auto text-[var(--color-text-light)] mb-4" />
+            <p className="text-lg font-semibold text-[var(--color-text)] mb-2">No products found</p>
+            <p className="text-sm text-[var(--color-text-muted)] mb-6">
+              Try a different category or search term
+            </p>
+            <Link
+              href="/products"
+              className="inline-block px-6 py-3 bg-[var(--color-primary)] text-white rounded-full font-semibold text-sm hover:bg-[var(--color-primary-hover)] transition"
+            >
+              View All Products
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

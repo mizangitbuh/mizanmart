@@ -4,8 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
+import { User, Mail, Lock, Phone, UserPlus } from 'lucide-react'
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -25,9 +24,7 @@ export default function RegisterPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { full_name: fullName, phone },
-      },
+      options: { data: { full_name: fullName, phone } },
     })
 
     if (error) {
@@ -35,54 +32,107 @@ export default function RegisterPage() {
       setLoading(false)
       return
     }
-
     router.push('/')
     router.refresh()
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16">
-      <h1 className="text-3xl font-bold mb-2">Create Account</h1>
-      <p className="text-gray-500 mb-6">Join mizanmart today</p>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Full Name</label>
-          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Your name" />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Phone</label>
-          <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="01XXXXXXXXX" />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Email</label>
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Password</label>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="••••••••" />
-        </div>
-
-        {error && (
-          <div className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 p-3 rounded">
-            {error}
+    <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center py-12 px-4">
+      <div className="w-full max-w-md">
+        <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg border border-[var(--color-border)] p-8">
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-block mb-4">
+              <span className="text-3xl font-black" style={{ color: 'var(--color-primary)' }}>
+                mizan<span style={{ color: 'var(--color-text)' }}>mart</span>
+              </span>
+            </Link>
+            <h1 className="text-2xl font-black text-[var(--color-text)]">Create Account</h1>
+            <p className="text-sm text-[var(--color-text-muted)] mt-1">Join mizanmart today</p>
           </div>
-        )}
 
-        <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading ? 'Creating...' : 'Create Account'}
-        </Button>
-      </form>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-[var(--color-text)] mb-2 uppercase tracking-wide">Full Name *</label>
+              <div className="relative">
+                <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+                <input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  className="w-full pl-11 pr-4 py-3 text-sm rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] focus:outline-none focus:border-[var(--color-primary)]"
+                  placeholder="Your full name"
+                />
+              </div>
+            </div>
 
-      <p className="text-center text-sm mt-6 text-gray-500">
-        Already have an account?{' '}
-        <Link href="/login" className="text-blue-600 hover:underline">
-          Login
-        </Link>
-      </p>
+            <div>
+              <label className="block text-xs font-bold text-[var(--color-text)] mb-2 uppercase tracking-wide">Phone</label>
+              <div className="relative">
+                <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 text-sm rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] focus:outline-none focus:border-[var(--color-primary)]"
+                  placeholder="01XXXXXXXXX"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[var(--color-text)] mb-2 uppercase tracking-wide">Email *</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full pl-11 pr-4 py-3 text-sm rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] focus:outline-none focus:border-[var(--color-primary)]"
+                  placeholder="you@example.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[var(--color-text)] mb-2 uppercase tracking-wide">Password *</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="w-full pl-11 pr-4 py-3 text-sm rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] focus:outline-none focus:border-[var(--color-primary)]"
+                  placeholder="Minimum 6 characters"
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-full font-bold text-sm transition disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              <UserPlus size={16} />
+              {loading ? 'Creating account...' : 'Create Account'}
+            </button>
+          </form>
+
+          <p className="text-center text-sm mt-6 text-[var(--color-text-muted)]">
+            Already have an account?{' '}
+            <Link href="/login" className="text-[var(--color-primary)] hover:underline font-bold">
+              Login
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

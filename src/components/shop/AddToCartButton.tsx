@@ -33,7 +33,16 @@ export function AddToCartButton({ product, disabled }: Props) {
   }
 
   return (
-    <Button size="lg" onClick={handleClick} disabled={disabled} className="w-full md:w-auto">
+    <Button
+      size="lg"
+      onClick={handleClick}
+      disabled={disabled}
+      className="w-full md:w-auto"
+      style={{
+        backgroundColor: disabled ? '#9E9E9E' : 'var(--color-primary)',
+        color: 'white',
+      }}
+    >
       {added ? (
         <>
           <Check size={18} className="mr-2" />

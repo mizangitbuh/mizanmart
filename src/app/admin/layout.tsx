@@ -19,11 +19,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (profile?.role !== 'admin') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-8">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-          <p className="text-gray-500 mb-6">This account does not have admin access.</p>
-          <Link href="/" className="text-blue-600 hover:underline">← Back to Home</Link>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] p-8">
+        <div className="text-center max-w-md bg-[var(--color-surface)] rounded-2xl p-8 border border-[var(--color-border)]">
+          <h1 className="text-2xl font-black mb-2 text-[var(--color-text)]">Access Denied</h1>
+          <p className="text-sm text-[var(--color-text-muted)] mb-6">This account does not have admin access.</p>
+          <Link href="/" className="text-[var(--color-primary)] hover:underline font-bold">← Back to Home</Link>
         </div>
       </div>
     )
@@ -38,10 +38,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   ]
 
   return (
-    <div className="min-h-screen flex bg-gray-50 dark:bg-gray-950">
-      <aside className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-shrink-0 hidden md:flex flex-col">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-          <Link href="/admin" className="text-lg font-bold">mizanmart Admin</Link>
+    <div className="min-h-screen flex bg-[var(--color-background)]">
+      <aside className="w-64 flex-shrink-0 hidden md:flex flex-col" style={{ background: 'var(--color-surface)', borderRight: '1px solid var(--color-border)' }}>
+        <div className="p-6" style={{ borderBottom: '1px solid var(--color-border)' }}>
+          <Link href="/admin" className="text-lg font-black" style={{ color: 'var(--color-primary)' }}>
+            mizan<span style={{ color: 'var(--color-text)' }}>mart</span> <span className="text-xs font-semibold text-[var(--color-text-muted)]">Admin</span>
+          </Link>
         </div>
         <nav className="p-4 flex-1 space-y-1">
           {nav.map((item) => {
@@ -50,7 +52,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--color-surface-hover)]"
+                style={{ color: 'var(--color-text)' }}
               >
                 <Icon size={18} />
                 {item.label}
@@ -58,8 +61,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             )
           })}
         </nav>
-        <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-          <Link href="/" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-800">
+        <div className="p-4" style={{ borderTop: '1px solid var(--color-border)' }}>
+          <Link href="/" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium hover:bg-[var(--color-surface-hover)]" style={{ color: 'var(--color-text-muted)' }}>
             <Home size={18} />
             View Store
           </Link>

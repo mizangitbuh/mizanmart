@@ -4,8 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
+import { Mail, Lock, LogIn } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -27,44 +26,79 @@ export default function LoginPage() {
       setLoading(false)
       return
     }
-
     router.push('/')
     router.refresh()
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16">
-      <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
-      <p className="text-gray-500 mb-6">Login to your mizanmart account</p>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Email</label>
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Password</label>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
-        </div>
-
-        {error && (
-          <div className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 p-3 rounded">
-            {error}
+    <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center py-12 px-4">
+      <div className="w-full max-w-md">
+        <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg border border-[var(--color-border)] p-8">
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-block mb-4">
+              <span className="text-3xl font-black" style={{ color: 'var(--color-primary)' }}>
+                mizan<span style={{ color: 'var(--color-text)' }}>mart</span>
+              </span>
+            </Link>
+            <h1 className="text-2xl font-black text-[var(--color-text)]">Welcome Back</h1>
+            <p className="text-sm text-[var(--color-text-muted)] mt-1">Login to your account</p>
           </div>
-        )}
 
-        <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
-        </Button>
-      </form>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-xs font-bold text-[var(--color-text)] mb-2 uppercase tracking-wide">Email</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full pl-11 pr-4 py-3 text-sm rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20"
+                  placeholder="you@example.com"
+                />
+              </div>
+            </div>
 
-      <p className="text-center text-sm mt-6 text-gray-500">
-        Don&apos;t have an account?{' '}
-        <Link href="/register" className="text-blue-600 hover:underline">
-          Register
-        </Link>
-      </p>
+            <div>
+              <label className="block text-xs font-bold text-[var(--color-text)] mb-2 uppercase tracking-wide">Password</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full pl-11 pr-4 py-3 text-sm rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-full font-bold text-sm transition disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              <LogIn size={16} />
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
+
+          <p className="text-center text-sm mt-6 text-[var(--color-text-muted)]">
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="text-[var(--color-primary)] hover:underline font-bold">
+              Create one
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
