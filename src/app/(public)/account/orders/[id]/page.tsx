@@ -1,0 +1,264 @@
+import Link from 'next/link'
+import { redirect, notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { formatPrice } from '@/lib/utils'
+import { Badge } from '@/components/ui/Badge'
+import { ArrowLeft, Package, MapPin, Phone, Mail, CreditCard, Clock, CheckCircle } from 'lucide-react'
+
+export const dynamic = 'force-dynamic'
+
+interface Props {
+  params: Promise<{ id: string }>
+}
+
+const statusVariants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
+  pending: 'warning',
+  confirmed: 'info',
+  shipped: 'info',
+  delivered: 'success',
+  cancelled: 'danger',
+}
+
+const timelineSteps = [
+  { key: 'pending', label: 'Order Placed', icon: Clock },
+  { key: 'confirmed', label: 'Confirmed', icon: CheckCircle },
+  { key: 'shipped', label: 'Shipped', icon: Package },
+  { key: 'delivered', label: 'Delivered', icon: CheckCircle },
+]
+
+export default async function OrderDetailPage({ params }: Props) {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) redirect('/login')
+
+  const { data: order } = await supabase
+    .from('orders')
+    .select('*, order_items(*)')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!order) notFound()
+
+  const currentStepIndex = timelineSteps.findIndex((s) => s.key === order.status)
+  const isCancelled = order.status === 'cancelled'
+
+  const address = order.shipping_address as any
+
+  return (
+    <div className="space-y-5">
+      {/* Back */}
+      <Link
+        href="/account/orders"
+        className="inline-flex items-center gap-2 text-sm font-medium hover:text-[var(--color-primary)]"
+        style={{ color: 'var(--color-text-muted)' }}
+      >
+        <ArrowLeft size={16} />
+        Back to Orders
+      </Link>
+
+      {/* Header */}
+      <div
+        className="p-5 rounded-[var(--radius-lg)] border flex flex-wrap items-center justify-between gap-3"
+        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      >
+        <div>
+          <div className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--color-text-muted)' }}>
+            Order Number
+          </div>
+          <div className="font-mono font-black text-xl" style={{ color: 'var(--color-text)' }}>
+            {order.order_number}
+          </div>
+          <div className="text-xs mt-1 flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
+            <Clock size={11} />
+            {new Date(order.created_at).toLocaleString('en-GB', {
+              day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+            })}
+          </div>
+        </div>
+        <Badge variant={statusVariants[order.status] || 'default'}>
+          {order.status.toUpperCase()}
+        </Badge>
+      </div>
+
+      {/* Timeline */}
+      {!isCancelled && (
+        <div
+          className="p-5 rounded-[var(--radius-lg)] border"
+          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <h3 className="font-black text-sm mb-4" style={{ color: 'var(--color-text)' }}>Order Timeline</h3>
+          <div className="flex items-center gap-0">
+            {timelineSteps.map((step, idx) => {
+              const Icon = step.icon
+              const isActive = idx <= currentStepIndex
+              const isCurrent = idx === currentStepIndex
+              return (
+                <div key={step.key} className="flex-1 flex items-center">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+                      style={{
+                        background: isActive ? 'var(--color-primary)' : 'var(--color-surface-hover)',
+                        color: isActive ? 'white' : 'var(--color-text-muted)',
+                        border: isCurrent ? '3px solid var(--color-primary-light)' : 'none',
+                      }}
+                    >
+                      <Icon size={16} />
+                    </div>
+                    <div
+                      className="text-[10px] font-bold mt-2 text-center whitespace-nowrap"
+                      style={{ color: isActive ? 'var(--color-primary)' : 'var(--color-text-muted)' }}
+                    >
+                      {step.label}
+                    </div>
+                  </div>
+                  {idx < timelineSteps.length - 1 && (
+                    <div
+                      className="flex-1 h-0.5 -mt-5"
+                      style={{ background: idx < currentStepIndex ? 'var(--color-primary)' : 'var(--color-border)' }}
+                    />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Items */}
+      <div
+        className="rounded-[var(--radius-lg)] border overflow-hidden"
+        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      >
+        <div className="p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
+          <h3 className="font-black text-sm" style={{ color: 'var(--color-text)' }}>
+            Items ({order.order_items?.length || 0})
+          </h3>
+        </div>
+        <div>
+          {order.order_items?.map((item: any) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between p-4 border-b last:border-0"
+              style={{ borderColor: 'var(--color-border)' }}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium line-clamp-1" style={{ color: 'var(--color-text)' }}>
+                  {item.product_name}
+                </div>
+                <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                  {formatPrice(Number(item.price))} × {item.quantity}
+                </div>
+              </div>
+              <div className="text-sm font-bold ml-4" style={{ color: 'var(--color-text)' }}>
+                {formatPrice(Number(item.subtotal))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Address + Payment */}
+      <div className="grid md:grid-cols-2 gap-5">
+        {/* Shipping */}
+        <div
+          className="p-5 rounded-[var(--radius-lg)] border"
+          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <h3 className="font-black text-sm mb-3 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+            <MapPin size={16} style={{ color: 'var(--color-primary)' }} />
+            Delivery Address
+          </h3>
+          <div className="space-y-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            <div className="font-semibold" style={{ color: 'var(--color-text)' }}>
+              {order.customer_name}
+            </div>
+            <div className="flex items-center gap-2">
+              <Phone size={12} /> {order.customer_phone}
+            </div>
+            {order.customer_email && (
+              <div className="flex items-center gap-2">
+                <Mail size={12} /> {order.customer_email}
+              </div>
+            )}
+            <div className="pt-2 border-t" style={{ borderColor: 'var(--color-border)' }}>
+              {address?.address}<br />
+              {address?.city}
+            </div>
+            {order.notes && (
+              <div className="pt-2 text-xs italic" style={{ color: 'var(--color-text-muted)' }}>
+                Note: {order.notes}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Payment */}
+        <div
+          className="p-5 rounded-[var(--radius-lg)] border"
+          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <h3 className="font-black text-sm mb-3 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+            <CreditCard size={16} style={{ color: 'var(--color-primary)' }} />
+            Payment
+          </h3>
+          <div className="space-y-3">
+            <div className="flex justify-between text-sm">
+              <span style={{ color: 'var(--color-text-muted)' }}>Method</span>
+              <span className="font-medium uppercase" style={{ color: 'var(--color-text)' }}>
+                {order.payment_method}
+              </span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span style={{ color: 'var(--color-text-muted)' }}>Status</span>
+              <Badge
+                variant={order.payment_status === 'paid' ? 'success' : 'warning'}
+                size="sm"
+              >
+                {order.payment_status}
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Summary */}
+      <div
+        className="p-5 rounded-[var(--radius-lg)] border"
+        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      >
+        <h3 className="font-black text-sm mb-4" style={{ color: 'var(--color-text)' }}>Order Summary</h3>
+        <div className="space-y-2 text-sm max-w-sm ml-auto">
+          <div className="flex justify-between">
+            <span style={{ color: 'var(--color-text-muted)' }}>Subtotal</span>
+            <span style={{ color: 'var(--color-text)' }}>{formatPrice(Number(order.subtotal))}</span>
+          </div>
+          <div className="flex justify-between">
+            <span style={{ color: 'var(--color-text-muted)' }}>Delivery</span>
+            <span style={{ color: Number(order.shipping_cost) === 0 ? 'var(--color-success)' : 'var(--color-text)' }}>
+              {Number(order.shipping_cost) === 0 ? 'FREE' : formatPrice(Number(order.shipping_cost))}
+            </span>
+          </div>
+          <div
+            className="flex justify-between text-lg font-black border-t pt-3 mt-2"
+            style={{ borderColor: 'var(--color-border)' }}
+          >
+            <span style={{ color: 'var(--color-text)' }}>Total</span>
+            <span style={{ color: 'var(--color-primary)' }}>{formatPrice(Number(order.total))}</span>
+          </div>
+        </div>
+      </div>
+
+      <Link
+        href="/products"
+        className="inline-block px-6 py-3 rounded-full font-bold text-sm text-white transition"
+        style={{ background: 'var(--color-primary)' }}
+      >
+        Continue Shopping
+      </Link>
+    </div>
+  )
+}

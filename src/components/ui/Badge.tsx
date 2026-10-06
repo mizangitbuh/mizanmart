@@ -1,26 +1,36 @@
 import { cn } from '@/lib/utils'
 import { type HTMLAttributes } from 'react'
 
-type Variant = 'default' | 'success' | 'warning' | 'danger' | 'info'
+type Variant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'sale' | 'new'
+type Size = 'sm' | 'md'
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: Variant
+  size?: Size
 }
 
 const variants: Record<Variant, string> = {
   default: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
-  success: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  warning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-  danger: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-  info: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  success: 'bg-[var(--color-success-bg)] text-[var(--color-success)]',
+  warning: 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]',
+  danger:  'bg-[var(--color-error-bg)] text-[var(--color-error)]',
+  info:    'bg-[var(--color-info-bg)] text-[var(--color-info)]',
+  sale:    'bg-[var(--color-text)] text-white dark:bg-white dark:text-black',
+  new:     'bg-[var(--color-success)] text-white',
 }
 
-export function Badge({ className, variant = 'default', ...props }: BadgeProps) {
+const sizes: Record<Size, string> = {
+  sm: 'px-2 py-0.5 text-[10px]',
+  md: 'px-2.5 py-1 text-xs',
+}
+
+export function Badge({ className, variant = 'default', size = 'md', ...props }: BadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+        'inline-flex items-center justify-center font-bold uppercase tracking-wide rounded',
         variants[variant],
+        sizes[size],
         className
       )}
       {...props}

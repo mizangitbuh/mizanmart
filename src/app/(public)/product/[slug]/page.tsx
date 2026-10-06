@@ -1,15 +1,26 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/utils'
-import { AddToCartButton } from '@/components/shop/AddToCartButton'
-import { Star, Truck, Shield, RotateCcw, Heart } from 'lucide-react'
+import { ProductGallery } from '@/components/shop/ProductGallery'
+import { ProductDetailTabs } from '@/components/shop/ProductDetailTabs'
+import { RelatedProducts } from '@/components/shop/RelatedProducts'
+import { ProductBuyPanel } from '@/components/shop/ProductBuyPanel'
+import { Star, Truck, Shield, RotateCcw } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
 interface Props {
   params: Promise<{ slug: string }>
+}
+
+function hashString(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i)
+    hash = hash & hash
+  }
+  return Math.abs(hash)
 }
 
 export default async function ProductPage({ params }: Props) {
@@ -18,143 +29,178 @@ export default async function ProductPage({ params }: Props) {
 
   const { data: product } = await supabase
     .from('products')
-    .select('*, category:categories(name, slug)')
+    .select('*, category:categories(id, name, slug)')
     .eq('slug', slug)
     .eq('status', 'active')
     .single()
 
   if (!product) notFound()
 
-  const image = product.images?.[0] || 'https://picsum.photos/seed/' + product.slug + '/800/800'
+  const images = product.images && product.images.length > 0
+    ? product.images
+    : ['https://picsum.photos/seed/' + product.slug + '/800/800']
+
   const inStock = product.stock_quantity > 0
   const discount = product.compare_price
     ? Math.round(((product.compare_price - product.price) / product.compare_price) * 100)
     : 0
 
-  const rating = 4.5
-  const reviewCount = 128
+  const hash = hashString(product.id)
+  const rating = 4 + (hash % 10) / 10
+  const reviewCount = 20 + (hash % 480)
+
+  const categoryData = Array.isArray(product.category) ? product.category[0] : product.category
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)]">
+    <div className="min-h-screen" style={{ background: 'var(--color-background)' }}>
       {/* Breadcrumb */}
-      <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
-        <div className="container-main py-3 text-sm text-[var(--color-text-muted)]">
+      <div className="border-b" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+        <div className="container-main py-3 text-sm" style={{ color: 'var(--color-text-muted)' }}>
           <Link href="/" className="hover:text-[var(--color-primary)]">Home</Link>
           <span className="mx-2">/</span>
-          <Link href={`/products?category=${product.category?.slug}`} className="hover:text-[var(--color-primary)]">
-            {product.category?.name}
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-[var(--color-text)] font-medium">{product.name}</span>
+          {categoryData && (
+            <>
+              <Link href={`/products?category=${categoryData.slug}`} className="hover:text-[var(--color-primary)]">
+                {categoryData.name}
+              </Link>
+              <span className="mx-2">/</span>
+            </>
+          )}
+          <span style={{ color: 'var(--color-text)' }}>{product.name}</span>
         </div>
       </div>
 
       <div className="container-main py-6 md:py-8">
-        <div className="grid md:grid-cols-2 gap-6 md:gap-10 bg-[var(--color-surface)] rounded-xl p-4 md:p-8 border border-[var(--color-border)]">
-          {/* Image */}
-          <div className="relative aspect-square rounded-lg overflow-hidden bg-[var(--color-background)]">
-            <Image src={image} alt={product.name} fill className="object-cover" sizes="50vw" priority />
-            {discount > 0 && (
-              <span className="badge-sale absolute top-4 left-4 rounded">
-                -{discount}% OFF
-              </span>
-            )}
-            <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-md">
-              <Heart size={18} className="text-gray-600" />
-            </button>
-          </div>
+        {/* Main Product Section */}
+        <div
+          className="grid md:grid-cols-2 gap-6 md:gap-10 bg-[var(--color-surface)] rounded-[var(--radius-lg)] p-4 md:p-6 border"
+          style={{ borderColor: 'var(--color-border)' }}
+        >
+          {/* Gallery */}
+          <ProductGallery images={images} productName={product.name} discount={discount} />
 
           {/* Info */}
           <div className="flex flex-col">
-            <h1 className="text-2xl md:text-3xl font-black text-[var(--color-text)] mb-3">
+            {/* Title */}
+            <h1 className="text-2xl md:text-3xl font-black mb-3" style={{ color: 'var(--color-text)' }}>
               {product.name}
             </h1>
 
-            {/* Rating */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} size={16} className={s <= Math.round(rating) ? 'star-filled fill-current' : 'star-empty'} />
-                ))}
+            {/* Rating + Stock */}
+            <div className="flex items-center gap-4 mb-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      size={16}
+                      className={s <= Math.round(rating) ? 'star-filled fill-current' : 'star-empty'}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                  {rating.toFixed(1)} ({reviewCount} reviews)
+                </span>
               </div>
-              <span className="text-sm text-[var(--color-text-muted)]">
-                {rating} ({reviewCount} reviews)
-              </span>
-              <span className="text-sm text-[var(--color-success)] font-medium">
-                ✓ In Stock
-              </span>
+              {inStock ? (
+                <span className="text-sm font-semibold" style={{ color: 'var(--color-success)' }}>
+                  ✓ In Stock
+                </span>
+              ) : (
+                <span className="text-sm font-semibold" style={{ color: 'var(--color-error)' }}>
+                  Out of Stock
+                </span>
+              )}
             </div>
 
             {/* Price */}
-            <div className="flex items-baseline gap-3 mb-6 pb-6 border-b border-[var(--color-border)]">
+            <div className="flex items-baseline gap-3 mb-6 pb-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
               <span className="text-3xl md:text-4xl font-black" style={{ color: 'var(--color-primary)' }}>
-                {formatPrice(product.price)}
+                {formatPrice(Number(product.price))}
               </span>
               {product.compare_price && (
                 <>
-                  <span className="text-lg text-[var(--color-text-light)] line-through">
-                    {formatPrice(product.compare_price)}
+                  <span className="text-lg line-through" style={{ color: 'var(--color-text-muted)' }}>
+                    {formatPrice(Number(product.compare_price))}
                   </span>
-                  <span className="text-sm font-bold text-[var(--color-success)] bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
-                    Save {formatPrice(product.compare_price - product.price)}
+                  <span
+                    className="text-sm font-bold px-2 py-1 rounded"
+                    style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)' }}
+                  >
+                    Save {formatPrice(Number(product.compare_price) - Number(product.price))}
                   </span>
                 </>
               )}
             </div>
 
-            {/* Description */}
+            {/* Short Description */}
             {product.description && (
-              <div className="mb-6">
-                <h3 className="text-sm font-bold text-[var(--color-text)] mb-2 uppercase tracking-wide">
-                  Description
-                </h3>
-                <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
-                  {product.description}
-                </p>
-              </div>
+              <p className="text-sm mb-6 leading-relaxed line-clamp-3" style={{ color: 'var(--color-text-secondary)' }}>
+                {product.description}
+              </p>
             )}
 
             {/* SKU */}
             {product.sku && (
-              <div className="text-xs text-[var(--color-text-muted)] mb-6">
+              <div className="text-xs mb-6" style={{ color: 'var(--color-text-muted)' }}>
                 SKU: <span className="font-mono">{product.sku}</span>
               </div>
             )}
 
-            {/* Add to Cart */}
-            <div className="mb-6">
-              <AddToCartButton
-                product={{
-                  id: product.id,
-                  name: product.name,
-                  slug: product.slug,
-                  price: product.price,
-                  image,
-                }}
-                disabled={!inStock}
-              />
-            </div>
+            {/* Buy Panel (quantity + add to cart + buy now) */}
+            <ProductBuyPanel
+              product={{
+                id: product.id,
+                name: product.name,
+                slug: product.slug,
+                price: Number(product.price),
+                image: images[0],
+              }}
+              disabled={!inStock}
+              maxQuantity={product.stock_quantity}
+            />
 
             {/* Trust badges */}
-            <div className="grid grid-cols-3 gap-3 pt-6 border-t border-[var(--color-border)]">
+            <div
+              className="grid grid-cols-3 gap-3 pt-6 mt-6 border-t"
+              style={{ borderColor: 'var(--color-border)' }}
+            >
               <div className="text-center">
-                <Truck size={20} className="mx-auto mb-1 text-[var(--color-primary)]" />
-                <div className="text-xs font-semibold text-[var(--color-text)]">Free Delivery</div>
-                <div className="text-[10px] text-[var(--color-text-muted)]">Over ৳1000</div>
+                <Truck size={20} className="mx-auto mb-1" style={{ color: 'var(--color-primary)' }} />
+                <div className="text-xs font-bold" style={{ color: 'var(--color-text)' }}>Free Delivery</div>
+                <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>Over ৳1000</div>
               </div>
               <div className="text-center">
-                <RotateCcw size={20} className="mx-auto mb-1 text-[var(--color-primary)]" />
-                <div className="text-xs font-semibold text-[var(--color-text)]">Easy Return</div>
-                <div className="text-[10px] text-[var(--color-text-muted)]">7 days</div>
+                <RotateCcw size={20} className="mx-auto mb-1" style={{ color: 'var(--color-primary)' }} />
+                <div className="text-xs font-bold" style={{ color: 'var(--color-text)' }}>7-Day Return</div>
+                <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>Easy return</div>
               </div>
               <div className="text-center">
-                <Shield size={20} className="mx-auto mb-1 text-[var(--color-primary)]" />
-                <div className="text-xs font-semibold text-[var(--color-text)]">Warranty</div>
-                <div className="text-[10px] text-[var(--color-text-muted)]">100% Genuine</div>
+                <Shield size={20} className="mx-auto mb-1" style={{ color: 'var(--color-primary)' }} />
+                <div className="text-xs font-bold" style={{ color: 'var(--color-text)' }}>Warranty</div>
+                <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>100% Genuine</div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Tabs Section */}
+        <div className="mt-8">
+          <ProductDetailTabs
+            description={product.description}
+            sku={product.sku}
+            category={categoryData?.name || null}
+            rating={rating}
+            reviewCount={reviewCount}
+          />
+        </div>
+
+        {/* Related Products */}
+        <RelatedProducts
+          categoryId={product.category_id}
+          currentProductId={product.id}
+          limit={4}
+        />
       </div>
     </div>
   )
