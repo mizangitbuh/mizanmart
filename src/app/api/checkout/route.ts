@@ -1,19 +1,225 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkoutLimiter, getClientIp } from '@/lib/rate-limit'
+
+// ═══════════════════════════════════════════════════════════
+// SECURE CHECKOUT API with Rate Limiting
+// 
+// 🔒 SECURITY:
+//   - Rate limiting (10 orders / 5 min / IP)
+//   - Server-side price calculation
+//   - Stock validation + decrement
+//   - Coupon server-verify
+//   - Input validation
+//   - Snapshots for history
+// ═══════════════════════════════════════════════════════════
+
+interface CheckoutItem {
+  productId: string
+  quantity: number
+}
+
+interface CheckoutRequest {
+  form: {
+    name: string
+    phone: string
+    email?: string
+    address: string
+    city: string
+    notes?: string
+  }
+  items: CheckoutItem[]
+  couponCode?: string | null
+}
 
 export async function POST(request: Request) {
-  try {
-    const body = await request.json()
-    const { form, items, subtotal, shipping, discount, couponCode, couponId, grandTotal } = body
+  // ═══════════════════════════════════════════════════════════
+  // RATE LIMITING (before any work)
+  // ═══════════════════════════════════════════════════════════
 
-    if (!items || items.length === 0) {
+  const clientIp = getClientIp(request)
+  const limit = checkoutLimiter.check(clientIp)
+
+  if (!limit.allowed) {
+    const retryAfter = Math.ceil((limit.resetAt - Date.now()) / 1000)
+    return NextResponse.json(
+      { error: `অনেক বেশি অর্ডার। ${retryAfter} সেকেন্ড পর আবার চেষ্টা করুন।` },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      }
+    )
+  }
+
+  const supabase = await createClient()
+
+  try {
+    const body: CheckoutRequest = await request.json()
+    const { form, items, couponCode } = body
+
+    // ═══════════════════════════════════════════════════════════
+    // INPUT VALIDATION
+    // ═══════════════════════════════════════════════════════════
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 })
     }
 
-    const supabase = await createClient()
+    if (items.length > 50) {
+      return NextResponse.json({ error: 'Too many distinct items' }, { status: 400 })
+    }
+
+    if (!form?.name?.trim() || !form?.phone?.trim() || !form?.address?.trim() || !form?.city?.trim()) {
+      return NextResponse.json({ error: 'Missing required shipping fields' }, { status: 400 })
+    }
+
+    if (form.name.length > 200 || form.phone.length > 20 || form.address.length > 500) {
+      return NextResponse.json({ error: 'Field values too long' }, { status: 400 })
+    }
+
+    // BD phone regex
+    const phoneRegex = /^01[3-9]\d{8}$/
+    if (!phoneRegex.test(form.phone.replace(/\s/g, ''))) {
+      return NextResponse.json({ error: 'Invalid phone number format' }, { status: 400 })
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // FETCH PRODUCTS FROM DATABASE (source of truth)
+    // ═══════════════════════════════════════════════════════════
+
+    const productIds = items.map((i) => i.productId).filter(Boolean)
+    const uniqueIds = [...new Set(productIds)]
+
+    if (uniqueIds.length === 0) {
+      return NextResponse.json({ error: 'Invalid product IDs' }, { status: 400 })
+    }
+
+    const { data: dbProducts, error: productsError } = await supabase
+      .from('products')
+      .select('id, name, price, stock_quantity, status')
+      .in('id', uniqueIds)
+
+    if (productsError) throw productsError
+
+    if (!dbProducts || dbProducts.length === 0) {
+      return NextResponse.json({ error: 'Products not found' }, { status: 404 })
+    }
+
+    const productMap = new Map(dbProducts.map((p) => [p.id, p]))
+
+    // ═══════════════════════════════════════════════════════════
+    // VALIDATE STOCK + CALCULATE TOTALS SERVER-SIDE
+    // ═══════════════════════════════════════════════════════════
+
+    const validatedItems = []
+    let serverSubtotal = 0
+
+    for (const item of items) {
+      const product = productMap.get(item.productId)
+
+      if (!product) {
+        return NextResponse.json(
+          { error: `Product not found: ${item.productId}` },
+          { status: 404 }
+        )
+      }
+
+      if (product.status !== 'active') {
+        return NextResponse.json(
+          { error: `Product not available: ${product.name}` },
+          { status: 400 }
+        )
+      }
+
+      const qty = Math.max(1, Math.floor(Number(item.quantity) || 0))
+      if (qty > 100) {
+        return NextResponse.json(
+          { error: `Maximum quantity exceeded for ${product.name}` },
+          { status: 400 }
+        )
+      }
+
+      if (product.stock_quantity < qty) {
+        return NextResponse.json(
+          { error: `Insufficient stock for ${product.name}. Only ${product.stock_quantity} available.` },
+          { status: 400 }
+        )
+      }
+
+      // 🔒 Use DB price, NOT client price
+      const unitPrice = Number(product.price)
+      const itemSubtotal = unitPrice * qty
+      serverSubtotal += itemSubtotal
+
+      validatedItems.push({
+        product_id: product.id,
+        product_name: product.name,          // SNAPSHOT
+        price: unitPrice,                    // SNAPSHOT
+        quantity: qty,
+        subtotal: itemSubtotal,
+      })
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // SERVER-SIDE SHIPPING
+    // ═══════════════════════════════════════════════════════════
+
+    const shippingCost = serverSubtotal >= 1000 ? 0 : 60
+
+    // ═══════════════════════════════════════════════════════════
+    // SERVER-SIDE COUPON VERIFICATION
+    // ═══════════════════════════════════════════════════════════
+
+    let couponDiscount = 0
+    let couponId: string | null = null
+    let couponCodeSnapshot: string | null = null
+
+    if (couponCode) {
+      const { data: coupon } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', couponCode.toUpperCase().trim())
+        .eq('is_active', true)
+        .single()
+
+      if (coupon) {
+        const now = new Date()
+        const isValid =
+          (!coupon.start_date || new Date(coupon.start_date) <= now) &&
+          (!coupon.end_date || new Date(coupon.end_date) >= now) &&
+          (!coupon.usage_limit || coupon.usage_count < coupon.usage_limit) &&
+          serverSubtotal >= Number(coupon.min_order_amount || 0)
+
+        if (isValid) {
+          let discount = 0
+          if (coupon.discount_type === 'percentage') {
+            discount = (serverSubtotal * Number(coupon.discount_value)) / 100
+            if (coupon.max_discount_amount) {
+              discount = Math.min(discount, Number(coupon.max_discount_amount))
+            }
+          } else {
+            discount = Number(coupon.discount_value)
+          }
+          couponDiscount = Math.min(Math.round(discount * 100) / 100, serverSubtotal)
+          couponId = coupon.id
+          couponCodeSnapshot = coupon.code
+        }
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // FINAL TOTAL (server-calculated)
+    // ═══════════════════════════════════════════════════════════
+
+    const grandTotal = Math.max(0, serverSubtotal + shippingCost - couponDiscount)
+
+    // ═══════════════════════════════════════════════════════════
+    // CREATE ORDER
+    // ═══════════════════════════════════════════════════════════
+
     const { data: { user } } = await supabase.auth.getUser()
 
-    const orderNumber = 'MM' + Date.now().toString().slice(-8)
+    const orderNumber = 'MM' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 100).toString().padStart(2, '0')
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -21,39 +227,68 @@ export async function POST(request: Request) {
         user_id: user?.id || null,
         order_number: orderNumber,
         status: 'pending',
-        subtotal,
-        shipping_cost: shipping,
+        subtotal: serverSubtotal,
+        shipping_cost: shippingCost,
+        discount: couponDiscount,
         total: grandTotal,
         payment_method: 'cod',
         payment_status: 'pending',
-        customer_name: form.name,
-        customer_phone: form.phone,
-        customer_email: form.email || null,
+        customer_name: form.name.trim(),
+        customer_phone: form.phone.trim(),
+        customer_email: form.email?.trim() || null,
         shipping_address: {
-          address: form.address,
-          city: form.city,
+          address: form.address.trim(),
+          city: form.city.trim(),
         },
-        notes: form.notes || null,
+        notes: form.notes?.trim() || null,
+        coupon_code: couponCodeSnapshot,
       })
       .select()
       .single()
 
     if (orderError) throw orderError
 
-    const orderItems = items.map((item: any) => ({
+    // ═══════════════════════════════════════════════════════════
+    // INSERT ORDER ITEMS
+    // ═══════════════════════════════════════════════════════════
+
+    const orderItemsWithId = validatedItems.map((item) => ({
+      ...item,
       order_id: order.id,
-      product_id: item.productId,
-      product_name: item.name,
-      price: item.price,
-      quantity: item.quantity,
-      subtotal: item.price * item.quantity,
     }))
 
-    const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
+    const { error: itemsError } = await supabase.from('order_items').insert(orderItemsWithId)
     if (itemsError) throw itemsError
 
-    // Increment coupon usage
-    if (couponId && couponCode) {
+    // ═══════════════════════════════════════════════════════════
+    // DECREMENT STOCK
+    // ═══════════════════════════════════════════════════════════
+
+    for (const item of validatedItems) {
+      const product = productMap.get(item.product_id)
+      if (!product) continue
+
+      const newStock = Math.max(0, product.stock_quantity - item.quantity)
+
+      const { error: stockError } = await supabase
+        .from('products')
+        .update({
+          stock_quantity: newStock,
+          status: newStock <= 0 ? 'out_of_stock' : product.status,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', item.product_id)
+
+      if (stockError) {
+        console.error(`Stock decrement failed for ${item.product_name}:`, stockError)
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // INCREMENT COUPON USAGE
+    // ═══════════════════════════════════════════════════════════
+
+    if (couponId) {
       try {
         const { data: coupon } = await supabase
           .from('coupons')
@@ -67,14 +302,24 @@ export async function POST(request: Request) {
             .update({ usage_count: (coupon.usage_count || 0) + 1 })
             .eq('id', couponId)
         }
-      } catch (couponErr) {
-        console.error('Failed to update coupon usage:', couponErr)
+      } catch (e) {
+        console.error('Coupon usage increment failed:', e)
       }
     }
+
+    // ═══════════════════════════════════════════════════════════
+    // SUCCESS
+    // ═══════════════════════════════════════════════════════════
 
     return NextResponse.json({
       success: true,
       orderNumber: order.order_number,
+      summary: {
+        subtotal: serverSubtotal,
+        shipping: shippingCost,
+        discount: couponDiscount,
+        total: grandTotal,
+      },
     })
   } catch (err) {
     console.error('Checkout error:', err)
