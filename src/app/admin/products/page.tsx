@@ -1,89 +1,136 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
-import { formatPrice } from '@/lib/utils'
-import { Badge } from '@/components/ui/Badge'
-import { Plus, Edit } from 'lucide-react'
+import { ProductFilters } from '@/components/admin/ProductFilters'
+import { ProductsTable } from '@/components/admin/ProductsTable'
+import { Plus } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AdminProductsPage() {
+const PAGE_SIZE = 20
+
+interface Props {
+  searchParams: Promise<{
+    q?: string
+    category?: string
+    status?: string
+    stock?: string
+    page?: string
+  }>
+}
+
+export default async function AdminProductsPage({ searchParams }: Props) {
+  const params = await searchParams
   const supabase = await createClient()
 
-  const { data: products } = await supabase
+  const page = Math.max(1, parseInt(params.page || '1'))
+  const offset = (page - 1) * PAGE_SIZE
+
+  // Fetch categories for filters
+  const { data: categories } = await supabase
+    .from('categories')
+    .select('id, name')
+    .order('name')
+
+  // Build query
+  let query = supabase
     .from('products')
-    .select('*, category:categories(name)')
-    .order('created_at', { ascending: false })
+    .select('id, name, slug, price, compare_price, stock_quantity, sku, status, images, created_at, updated_at, category:categories(name)', { count: 'exact' })
+
+  // Search (name + SKU)
+  if (params.q) {
+    const term = `%${params.q}%`
+    query = query.or(`name.ilike.${term},sku.ilike.${term},slug.ilike.${term}`)
+  }
+
+  // Category filter
+  if (params.category) {
+    query = query.eq('category_id', params.category)
+  }
+
+  // Status filter
+  if (params.status) {
+    query = query.eq('status', params.status)
+  }
+
+  // Stock filter
+  if (params.stock === 'in') {
+    query = query.gt('stock_quantity', 0)
+  } else if (params.stock === 'low') {
+    query = query.gt('stock_quantity', 0).lte('stock_quantity', 5)
+  } else if (params.stock === 'out') {
+    query = query.lte('stock_quantity', 0)
+  }
+
+  // Sort + Pagination
+  query = query.order('created_at', { ascending: false }).range(offset, offset + PAGE_SIZE - 1)
+
+  const { data: products, count } = await query
+  const totalPages = Math.ceil((count || 0) / PAGE_SIZE)
+
+  const buildPageUrl = (newPage: number) => {
+    const sp = new URLSearchParams()
+    if (params.q) sp.set('q', params.q)
+    if (params.category) sp.set('category', params.category)
+    if (params.status) sp.set('status', params.status)
+    if (params.stock) sp.set('stock', params.stock)
+    sp.set('page', String(newPage))
+    return `/admin/products?${sp.toString()}`
+  }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Products</h1>
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black mb-1" style={{ color: 'var(--color-text)' }}>
+            Products
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+            {count || 0} product{(count || 0) !== 1 ? 's' : ''} {params.q || params.category || params.status || params.stock ? '(filtered)' : ''}
+          </p>
+        </div>
         <Link
           href="/admin/products/new"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 transition"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[var(--radius-md)] font-bold text-sm text-white transition hover:opacity-90"
+          style={{ background: 'var(--color-primary)' }}
         >
           <Plus size={16} />
           Add Product
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-            <tr>
-              <th className="text-left p-4">Product</th>
-              <th className="text-left p-4 hidden md:table-cell">Category</th>
-              <th className="text-left p-4">Price</th>
-              <th className="text-left p-4 hidden md:table-cell">Stock</th>
-              <th className="text-left p-4 hidden md:table-cell">Status</th>
-              <th className="text-right p-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products?.map((p) => (
-              <tr key={p.id} className="border-b border-gray-100 dark:border-gray-800 last:border-0">
-                <td className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-10 h-10 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-                      {p.images?.[0] && (
-                        <Image src={p.images[0]} alt={p.name} fill className="object-cover" sizes="40px" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-medium line-clamp-1">{p.name}</div>
-                      <div className="text-xs text-gray-500">{p.slug}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="p-4 hidden md:table-cell text-gray-600 dark:text-gray-400">
-                  {p.category?.name || '—'}
-                </td>
-                <td className="p-4 font-medium">{formatPrice(Number(p.price))}</td>
-                <td className="p-4 hidden md:table-cell">{p.stock_quantity}</td>
-                <td className="p-4 hidden md:table-cell">
-                  <Badge variant={p.status === 'active' ? 'success' : 'warning'}>{p.status}</Badge>
-                </td>
-                <td className="p-4 text-right">
-                  <Link
-                    href={`/admin/products/${p.id}`}
-                    className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm"
-                  >
-                    <Edit size={14} />
-                    Edit
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Filters */}
+      <ProductFilters categories={categories || []} />
 
-        {(!products || products.length === 0) && (
-          <div className="p-12 text-center text-gray-500">
-            No products yet. <Link href="/admin/products/new" className="text-blue-600 hover:underline">Add your first product</Link>
-          </div>
-        )}
-      </div>
+      {/* Table */}
+      <ProductsTable products={products || []} categories={categories || []} />
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-2">
+          {page > 1 && (
+            <Link
+              href={buildPageUrl(page - 1)}
+              className="px-4 py-2 rounded-[var(--radius-md)] border text-sm font-semibold transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+            >
+              ← Previous
+            </Link>
+          )}
+          <span className="text-sm px-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>
+            Page {page} of {totalPages}
+          </span>
+          {page < totalPages && (
+            <Link
+              href={buildPageUrl(page + 1)}
+              className="px-4 py-2 rounded-[var(--radius-md)] border text-sm font-semibold transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+            >
+              Next →
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   )
 }
