@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { form, items, subtotal, shipping, grandTotal } = body
+    const { form, items, subtotal, shipping, discount, couponCode, couponId, grandTotal } = body
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 })
@@ -52,7 +52,30 @@ export async function POST(request: Request) {
     const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
     if (itemsError) throw itemsError
 
-    return NextResponse.json({ success: true, orderNumber: order.order_number })
+    // Increment coupon usage
+    if (couponId && couponCode) {
+      try {
+        const { data: coupon } = await supabase
+          .from('coupons')
+          .select('usage_count')
+          .eq('id', couponId)
+          .single()
+
+        if (coupon) {
+          await supabase
+            .from('coupons')
+            .update({ usage_count: (coupon.usage_count || 0) + 1 })
+            .eq('id', couponId)
+        }
+      } catch (couponErr) {
+        console.error('Failed to update coupon usage:', couponErr)
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      orderNumber: order.order_number,
+    })
   } catch (err) {
     console.error('Checkout error:', err)
     return NextResponse.json(
