@@ -6,7 +6,9 @@ import {
   isValidStatus,
   isValidPaymentStatus,
   canTransition,
+  canTransitionPayment,
   type OrderStatus,
+  type PaymentStatus,
 } from '@/lib/orders/status-machine'
 
 async function requireAdmin() {
@@ -105,6 +107,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Order not found' }, { status: 404 })
   }
 
+  // Order status transition check
   if (patch.status !== undefined && patch.status !== before.status) {
     const from = before.status as OrderStatus
     const to = patch.status as OrderStatus
@@ -113,6 +116,22 @@ export async function PATCH(
         {
           error: `Cannot change status from "${from}" to "${to}"`,
           currentStatus: from,
+          attempted: to,
+        },
+        { status: 422 }
+      )
+    }
+  }
+
+  // Payment status transition check
+  if (patch.payment_status !== undefined && patch.payment_status !== before.payment_status) {
+    const from = before.payment_status as PaymentStatus
+    const to = patch.payment_status as PaymentStatus
+    if (!canTransitionPayment(from, to)) {
+      return NextResponse.json(
+        {
+          error: `Cannot change payment from "${from}" to "${to}"`,
+          currentPaymentStatus: from,
           attempted: to,
         },
         { status: 422 }

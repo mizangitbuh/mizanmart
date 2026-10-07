@@ -55,3 +55,34 @@ export type PaymentStatus = (typeof PAYMENT_STATUSES)[number]
 export function isValidPaymentStatus(s: string): s is PaymentStatus {
   return (PAYMENT_STATUSES as readonly string[]).includes(s)
 }
+
+// ─── Payment Status Transitions ───
+export const PAYMENT_TRANSITIONS: Record<PaymentStatus, PaymentStatus[]> = {
+  pending: ['paid', 'failed'],
+  paid: ['refunded'],
+  failed: ['pending'],
+  refunded: [],
+}
+
+export function canTransitionPayment(from: PaymentStatus, to: PaymentStatus): boolean {
+  if (from === to) return false
+  return PAYMENT_TRANSITIONS[from]?.includes(to) ?? false
+}
+
+export function getAllowedPaymentTransitions(from: PaymentStatus): PaymentStatus[] {
+  return PAYMENT_TRANSITIONS[from] ?? []
+}
+
+export const PAYMENT_LABELS: Record<PaymentStatus, string> = {
+  pending: 'Pending',
+  paid: 'Paid',
+  failed: 'Failed',
+  refunded: 'Refunded',
+}
+
+export const PAYMENT_EMOJI: Record<PaymentStatus, string> = {
+  pending: '⏳',
+  paid: '💰',
+  failed: '⚠️',
+  refunded: '↩️',
+}

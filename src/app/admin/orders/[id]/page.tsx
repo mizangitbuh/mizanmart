@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/utils'
 import { OrderStatusFlow } from '@/components/admin/OrderStatusFlow'
+import { PaymentStatusFlow } from '@/components/admin/PaymentStatusFlow'
 import { OrderTimeline, type AuditLogEntry } from '@/components/admin/OrderTimeline'
 import { ArrowLeft, User, MapPin, Package } from 'lucide-react'
 
@@ -229,13 +230,22 @@ export default async function OrderDetailPage({ params }: Props) {
                 </span>
               </div>
               <div
-                className="flex justify-between text-xs pt-2"
-                style={{ color: 'var(--color-text-muted)' }}
+                className="pt-3 space-y-2"
+                style={{ borderTop: '1px solid var(--color-border)' }}
               >
-                <span>Payment</span>
-                <span className="uppercase font-bold">
-                  {order.payment_method} — {order.payment_status}
-                </span>
+                <div
+                  className="flex items-center justify-between text-xs"
+                  style={{ color: 'var(--color-text-muted)' }}
+                >
+                  <span>Payment Method</span>
+                  <span className="uppercase font-bold" style={{ color: 'var(--color-text)' }}>
+                    {order.payment_method}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs gap-3">
+                  <span style={{ color: 'var(--color-text-muted)' }}>Payment Status</span>
+                  <PaymentStatusFlow orderId={order.id} currentStatus={order.payment_status} />
+                </div>
               </div>
             </div>
           </div>
