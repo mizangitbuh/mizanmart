@@ -18,6 +18,7 @@ import {
   ChevronRight,
   X,
   User,
+  Star,
 } from 'lucide-react'
 
 interface Props {
@@ -57,6 +58,7 @@ const sections = [
     items: [
       { href: '/admin/coupons', label: 'Coupons', icon: Ticket, badge: 'NEW' },
       { href: '/admin/banners', label: 'Banners', icon: ImageIcon, badge: 'NEW' },
+      { href: '/admin/reviews', label: 'Reviews', icon: Star, badge: 'NEW' },
     ],
   },
   {

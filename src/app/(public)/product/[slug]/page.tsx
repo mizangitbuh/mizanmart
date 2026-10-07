@@ -41,15 +41,48 @@ export default async function ProductPage({ params }: Props) {
   const categoryData = Array.isArray(product.category) ? product.category[0] : product.category
 
   // ─── Fetch approved reviews + stats ───
-  const { data: reviewsData } = await supabase
+  // Note: no profiles join here — reviews.user_id → auth.users.id,
+  // not profiles.id, so PostgREST can't auto-resolve the FK.
+  // Fetch profiles separately and merge.
+  const { data: reviewsData, error: reviewsError } = await supabase
     .from('reviews')
-    .select('id, rating, title, body, order_id, created_at, user_id, profiles(full_name)')
+    .select('id, rating, title, body, order_id, created_at, user_id, updated_at, admin_note, status, product_id')
     .eq('product_id', product.id)
     .eq('status', 'approved')
     .order('created_at', { ascending: false })
     .limit(50)
 
-  const reviewsList: ReviewItem[] = (reviewsData || []) as unknown as ReviewItem[]
+  if (reviewsError) {
+    console.error('[product page] reviews query failed:', reviewsError)
+  }
+
+  const rawReviews = (reviewsData || []) as any[]
+
+  // Fetch profile names for reviewers
+  const userIds = [...new Set(rawReviews.map((r) => r.user_id).filter(Boolean))]
+  let profileMap: Record<string, { full_name: string | null }> = {}
+  if (userIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name')
+      .in('id', userIds)
+    if (profiles) {
+      profileMap = Object.fromEntries(
+        profiles.map((p: any) => [p.id, { full_name: p.full_name }])
+      )
+    }
+  }
+
+  const reviewsList: ReviewItem[] = rawReviews.map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    title: r.title,
+    body: r.body,
+    order_id: r.order_id,
+    created_at: r.created_at,
+    user_id: r.user_id,
+    profiles: profileMap[r.user_id] || null,
+  }))
   const reviewCount = reviewsList.length
   const rating = reviewCount > 0
     ? reviewsList.reduce((sum, r) => sum + Number(r.rating), 0) / reviewCount
