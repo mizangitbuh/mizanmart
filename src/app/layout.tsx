@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter, Noto_Sans_Bengali } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'sonner'
+import { WishlistProvider } from '@/components/providers/WishlistProvider'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -30,7 +31,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="bn" className={`${inter.variable} ${notoBengali.variable}`} suppressHydrationWarning>
       <body>
-        {children}
+        <WishlistProvider>
+          {children}
+        </WishlistProvider>
         <Toaster
           position="top-center"
           richColors
