@@ -6,7 +6,7 @@ import { OrderStatusFlow } from '@/components/admin/OrderStatusFlow'
 import { PaymentStatusFlow } from '@/components/admin/PaymentStatusFlow'
 import { RefundSummary } from '@/components/admin/RefundSummary'
 import { OrderTimeline, type AuditLogEntry } from '@/components/admin/OrderTimeline'
-import { ArrowLeft, User, MapPin, Package } from 'lucide-react'
+import { ArrowLeft, User, MapPin, Package, Printer } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,7 +67,23 @@ export default async function OrderDetailPage({ params }: Props) {
             })}
           </div>
         </div>
-        <OrderStatusFlow orderId={order.id} currentStatus={order.status} />
+        <div className="flex flex-col items-end gap-2">
+          <a
+            href={`/api/admin/orders/${order.id}/invoice`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] text-xs font-bold border transition hover:opacity-80"
+            style={{
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-text)',
+              background: 'var(--color-surface)',
+            }}
+          >
+            <Printer size={12} />
+            Print Invoice
+          </a>
+          <OrderStatusFlow orderId={order.id} currentStatus={order.status} />
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-5">
