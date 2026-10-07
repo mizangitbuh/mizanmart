@@ -10,6 +10,7 @@ const navItems = [
   { href: '/account/orders', label: 'My Orders', icon: Package },
   { href: '/account/profile', label: 'Profile', icon: User },
   { href: '/account/addresses', label: 'Addresses', icon: MapPin },
+  { href: '/account/wishlist', label: 'Wishlist', icon: Heart },
 ]
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {

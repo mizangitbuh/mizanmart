@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { ShoppingCart, Star, Heart } from 'lucide-react'
+import { ShoppingCart, Star } from 'lucide-react'
 import { useCartStore } from '@/stores/cart'
 import { formatPrice } from '@/lib/utils'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
+import { WishlistButton } from '@/components/shop/WishlistButton'
 
 export interface ProductCardData {
   id: string
@@ -16,6 +17,7 @@ export interface ProductCardData {
   compare_price: number | null
   images: string[]
   stock_quantity?: number
+  initialWishlisted?: boolean
 }
 
 // Deterministic hash — same product always same rating
@@ -30,7 +32,6 @@ function hashString(str: string): number {
 
 export function ProductCard({ product }: { product: ProductCardData }) {
   const addItem = useCartStore((s) => s.addItem)
-  const [wishlisted, setWishlisted] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
 
   let image = 'https://picsum.photos/seed/' + product.slug + '/600/600'
@@ -63,12 +64,6 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     })
     setJustAdded(true)
     setTimeout(() => setJustAdded(false), 1500)
-  }
-
-  const handleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setWishlisted(!wishlisted)
   }
 
   return (
@@ -105,14 +100,12 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             </div>
           )}
 
-          <button
-            onClick={handleWishlist}
-            className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"
-            style={{ background: 'rgba(255,255,255,0.95)' }}
-            aria-label="Add to wishlist"
-          >
-            <Heart size={14} className={wishlisted ? 'fill-red-500 text-red-500' : 'text-gray-500'} />
-          </button>
+          <div className="absolute top-2 right-2">
+            <WishlistButton
+              productId={product.id}
+              initialWishlisted={product.initialWishlisted || false}
+            />
+          </div>
 
           {!outOfStock && (
             <button
