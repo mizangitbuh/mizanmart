@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
-import { ArrowLeft, Package, MapPin, Phone, Mail, CreditCard, Clock, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Package, MapPin, Phone, Mail, CreditCard, Clock, CheckCircle, Download } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,9 +78,25 @@ export default async function OrderDetailPage({ params }: Props) {
             })}
           </div>
         </div>
-        <Badge variant={statusVariants[order.status] || 'default'}>
-          {order.status.toUpperCase()}
-        </Badge>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant={statusVariants[order.status] || 'default'}>
+            {order.status.toUpperCase()}
+          </Badge>
+          <a
+            href={`/api/orders/${order.id}/invoice`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-md)] text-xs font-bold border transition hover:opacity-80"
+            style={{
+              borderColor: 'var(--color-primary)',
+              color: 'var(--color-primary)',
+              background: 'transparent',
+            }}
+          >
+            <Download size={12} />
+            Invoice
+          </a>
+        </div>
       </div>
 
       {/* Timeline */}
