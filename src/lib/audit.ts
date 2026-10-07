@@ -23,6 +23,7 @@ export type AuditAction =
   | 'product.delete'
   | 'product.bulk_update'
   | 'order.update'
+  | 'order.refund'
   | 'order.status_change'
   | 'order.cancel'
   | 'order.delete'

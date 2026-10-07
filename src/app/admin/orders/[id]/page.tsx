@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/utils'
 import { OrderStatusFlow } from '@/components/admin/OrderStatusFlow'
 import { PaymentStatusFlow } from '@/components/admin/PaymentStatusFlow'
+import { RefundSummary } from '@/components/admin/RefundSummary'
 import { OrderTimeline, type AuditLogEntry } from '@/components/admin/OrderTimeline'
 import { ArrowLeft, User, MapPin, Package } from 'lucide-react'
 
@@ -244,11 +245,25 @@ export default async function OrderDetailPage({ params }: Props) {
                 </div>
                 <div className="flex items-center justify-between text-xs gap-3">
                   <span style={{ color: 'var(--color-text-muted)' }}>Payment Status</span>
-                  <PaymentStatusFlow orderId={order.id} currentStatus={order.payment_status} />
+                  <PaymentStatusFlow
+                    orderId={order.id}
+                    currentStatus={order.payment_status}
+                    orderTotal={Number(order.total)}
+                    alreadyRefunded={Number((order as any).refund_amount || 0)}
+                  />
                 </div>
               </div>
             </div>
           </div>
+
+          {(order as any).refund_amount > 0 && (
+            <RefundSummary
+              refundAmount={Number((order as any).refund_amount || 0)}
+              refundReason={(order as any).refund_reason || null}
+              refundedAt={(order as any).refunded_at || null}
+              orderTotal={Number(order.total)}
+            />
+          )}
         </div>
 
         <div className="lg:col-span-1">

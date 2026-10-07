@@ -31,7 +31,18 @@ function describeChange(entry: AuditLogEntry): string {
     return `Status: ${changes.status.old ?? '—'} → ${changes.status.new}`
   }
   if (changes.payment_status) {
-    return `Payment: ${changes.payment_status.old ?? '—'} → ${changes.payment_status.new}`
+    const oldP = changes.payment_status.old
+    const newP = changes.payment_status.new
+    if (oldP !== newP) {
+      return `Payment: ${oldP ?? '—'} → ${newP}`
+    }
+  }
+  if (changes.refund_amount) {
+    const lastRefund = (changes as any).last_refund?.new
+    if (lastRefund && lastRefund > 0) {
+      return `Refund issued: ${lastRefund}`
+    }
+    return 'Refund issued'
   }
   if (changes.notes) {
     return 'Notes updated'
