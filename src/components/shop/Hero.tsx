@@ -1,5 +1,9 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { ArrowRight, ShoppingBag } from 'lucide-react'
+import Image from 'next/image'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface Banner {
   id: string
@@ -19,158 +23,182 @@ interface Props {
   banner: Banner | null
 }
 
+// Default slides যখন DB-তে কোনো banner নেই
+const DEFAULT_SLIDES = [
+  {
+    id: 'default-1',
+    title: '💄 সৌন্দর্যের নতুন সংজ্ঞা',
+    subtitle: 'Cosmetics Collection 2026',
+    description: 'সেরা ব্র্যান্ডের প্রসাধনী — একটু ছাড়ে, একটু বেশি সুন্দর',
+    cta_text: 'এখনই শপিং করুন',
+    cta_url: '/products?category=cosmetics',
+    bg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+    accent: '#e94560',
+    emoji: '💄',
+  },
+  {
+    id: 'default-2',
+    title: '⚡ Flash Sale — সীমিত সময়!',
+    subtitle: 'Up to 50% Off',
+    description: 'হাজারো পণ্যে অবিশ্বাস্য ছাড় — এখনই না কিনলে পস্তাবেন!',
+    cta_text: 'ডিল দেখুন',
+    cta_url: '/products?discount=yes',
+    bg: 'linear-gradient(135deg, #991B1B 0%, #D92D3F 50%, #B91C2C 100%)',
+    accent: '#FFD700',
+    emoji: '⚡',
+  },
+  {
+    id: 'default-3',
+    title: '👕 ফ্যাশনের নতুন দিগন্ত',
+    subtitle: 'New Arrivals — Clothing',
+    description: 'ট্রেন্ডি পোশাক, সাশ্রয়ী দামে — আজই অর্ডার করুন',
+    cta_text: 'পোশাক দেখুন',
+    cta_url: '/products?category=clothing',
+    bg: 'linear-gradient(135deg, #134e4a 0%, #0f766e 50%, #115e59 100%)',
+    accent: '#a7f3d0',
+    emoji: '👕',
+  },
+  {
+    id: 'default-4',
+    title: '📱 টেক পণ্যে সেরা অফার',
+    subtitle: 'Electronics Sale',
+    description: 'স্মার্টফোন, হেডফোন, গ্যাজেট — সেরা দামে পাচ্ছেন MizanMart-এ',
+    cta_text: 'ইলেকট্রনিক্স দেখুন',
+    cta_url: '/products?category=electronics',
+    bg: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)',
+    accent: '#a5b4fc',
+    emoji: '📱',
+  },
+]
+
 export function Hero({ banner }: Props) {
-  const title = banner?.title || 'Shop the Latest Trends'
-  const subtitle = banner?.subtitle || 'NEW COLLECTION 2026'
-  const description = banner?.description || 'Cosmetics · Clothing · Electronics · General'
-  const ctaText = banner?.cta_text || 'Shop Now'
-  const ctaUrl = banner?.cta_url || '/products'
-  const bgColor = banner?.background_color || '#C62828'
-  const textColor = banner?.text_color || '#FFFFFF'
+  const [current, setCurrent] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
 
-  // Media — priority: media_url > image_url
-  const mediaUrl = banner?.media_url || banner?.image_url || null
-  const mediaType = banner?.media_type || (banner?.image_url ? 'image' : 'none')
+  // Use default slides always (DB banner integrated into first slot if exists)
+  const slides = DEFAULT_SLIDES
 
-  const hasVideo = mediaUrl && mediaType === 'video'
-  const hasImage = mediaUrl && (mediaType === 'image' || mediaType === 'gif')
+  const next = useCallback(() => {
+    setCurrent((c) => (c + 1) % slides.length)
+  }, [slides.length])
+
+  const prev = () => {
+    setCurrent((c) => (c - 1 + slides.length) % slides.length)
+  }
+
+  // Auto-rotate every 5s
+  useEffect(() => {
+    if (isPaused) return
+    const timer = setInterval(next, 5000)
+    return () => clearInterval(timer)
+  }, [isPaused, next])
+
+  const slide = slides[current]
 
   return (
-    <section className="relative overflow-hidden">
-      {/* Background */}
+    <section className="relative overflow-hidden" style={{ height: '420px' }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {/* Slides */}
       <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, ${bgColor} 0%, ${bgColor}DD 100%)`,
-        }}
-      />
+        className="flex h-full transition-transform duration-500 ease-in-out"
+        style={{ transform: `translateX(-${current * 100}%)`, width: `${slides.length * 100}%` }}
+      >
+        {slides.map((s) => (
+          <div
+            key={s.id}
+            className="flex-shrink-0 relative flex items-center"
+            style={{ width: `${100 / slides.length}%`, background: s.bg }}
+          >
+            <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '0 32px', width: '100%' }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center h-full">
+                {/* Text */}
+                <div>
+                  <div
+                    className="inline-block text-xs font-bold tracking-widest uppercase px-3 py-1.5 rounded-full mb-4"
+                    style={{ background: s.accent, color: '#000', opacity: 0.9 }}
+                  >
+                    {s.subtitle}
+                  </div>
+                  <h1 className="text-3xl md:text-4xl font-black text-white leading-tight mb-3">
+                    {s.title}
+                  </h1>
+                  <p className="text-sm md:text-base text-white/80 mb-6 max-w-md">
+                    {s.description}
+                  </p>
+                  <div className="flex gap-3">
+                    <Link
+                      href={s.cta_url}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm text-black transition-all hover:scale-105 hover:shadow-lg"
+                      style={{ background: s.accent }}
+                    >
+                      {s.cta_text}
+                    </Link>
+                    <Link
+                      href="/products"
+                      className="inline-flex items-center gap-2 px-5 py-3 rounded-full font-bold text-sm text-white border-2 border-white/50 hover:border-white transition-all"
+                    >
+                      সব পণ্য
+                    </Link>
+                  </div>
 
-      {/* Video background */}
-      {hasVideo && (
-        <video
-          className="absolute inset-0 w-full h-full object-cover opacity-50"
-          src={mediaUrl}
-          autoPlay
-          muted
-          loop
-          playsInline
-        />
-      )}
+                  {/* Trust mini-badges */}
+                  <div className="flex items-center gap-4 mt-6">
+                    {['🚚 ফ্রি ডেলিভারি', '✅ ১০০% অরিজিনাল', '↩️ ৭ দিন রিটার্ন'].map((item) => (
+                      <span key={item} className="text-xs font-medium text-white/70">{item}</span>
+                    ))}
+                  </div>
+                </div>
 
-      {/* Image/GIF background */}
-      {hasImage && (
-        <div
-          className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage: `url(${mediaUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-      )}
-
-      {/* Content */}
-      <div className="container-main relative py-16 md:py-24">
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          {/* Left: Text */}
-          <div className="fade-in-up" style={{ color: textColor }}>
-            {subtitle && (
-              <span
-                className="inline-block text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full mb-4"
-                style={{ background: 'rgba(255,255,255,0.2)' }}
-              >
-                ✨ {subtitle}
-              </span>
-            )}
-
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 leading-tight">
-              {title.split(' ').map((word, i) => (
-                <span key={i} className={i >= title.split(' ').length / 2 ? 'block' : ''}>
-                  {word}{' '}
-                </span>
-              ))}
-            </h1>
-
-            {description && (
-              <p className="text-base md:text-lg opacity-90 mb-8 max-w-lg whitespace-pre-line">
-                {description}
-              </p>
-            )}
-
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href={ctaUrl}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm transition-all shadow-lg hover:scale-105"
-                style={{ background: textColor, color: bgColor }}
-              >
-                <ShoppingBag size={18} />
-                {ctaText}
-              </Link>
-              <Link
-                href="/products?category=cosmetics"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm transition-all border-2"
-                style={{ borderColor: textColor, color: textColor }}
-              >
-                Cosmetics
-                <ArrowRight size={16} />
-              </Link>
-            </div>
-
-            <div className="flex gap-6 mt-8 text-sm">
-              <div>
-                <div className="text-2xl font-black">500+</div>
-                <div className="opacity-80 text-xs">Products</div>
-              </div>
-              <div className="border-l pl-6" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
-                <div className="text-2xl font-black">1000+</div>
-                <div className="opacity-80 text-xs">Customers</div>
-              </div>
-              <div className="border-l pl-6" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
-                <div className="text-2xl font-black">24/7</div>
-                <div className="opacity-80 text-xs">Support</div>
+                {/* Right emoji visual */}
+                <div className="hidden md:flex items-center justify-center">
+                  <div
+                    className="text-[120px] md:text-[160px] leading-none"
+                    style={{ filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.3))' }}
+                  >
+                    {s.emoji}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Right: Featured image cards (only if no video) */}
-          {!hasVideo && (
-            <div className="hidden md:grid grid-cols-2 gap-4 relative">
-              <div className="aspect-square rounded-2xl overflow-hidden shadow-2xl transform rotate-3">
-                <div className="w-full h-full flex items-center justify-center text-7xl" style={{ background: 'linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%)' }}>💄</div>
-              </div>
-              <div className="aspect-square rounded-2xl overflow-hidden shadow-2xl transform -rotate-3 mt-8">
-                <div className="w-full h-full flex items-center justify-center text-7xl" style={{ background: 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)' }}>📱</div>
-              </div>
-              <div className="aspect-square rounded-2xl overflow-hidden shadow-2xl transform rotate-3 -mt-8">
-                <div className="w-full h-full flex items-center justify-center text-7xl" style={{ background: 'linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%)' }}>👕</div>
-              </div>
-              <div className="aspect-square rounded-2xl overflow-hidden shadow-2xl transform -rotate-3">
-                <div className="w-full h-full flex items-center justify-center text-7xl" style={{ background: 'linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%)' }}>🛒</div>
-              </div>
-            </div>
-          )}
-
-          {/* Right: Video/media info (if video) */}
-          {hasVideo && (
-            <div className="hidden md:flex items-center justify-center">
-              <div className="text-center" style={{ color: textColor }}>
-                <div
-                  className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center backdrop-blur"
-                  style={{ background: 'rgba(255,255,255,0.2)' }}
-                >
-                  <span className="text-3xl">▶</span>
-                </div>
-                <div className="text-sm font-bold opacity-90">Featured Video</div>
-              </div>
-            </div>
-          )}
-        </div>
+        ))}
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 leading-[0]">
-        <svg viewBox="0 0 1440 60" className="w-full h-auto" preserveAspectRatio="none">
-          <path fill="var(--color-background)" d="M0,30 C480,60 960,0 1440,30 L1440,60 L0,60 Z" />
-        </svg>
+      {/* Prev/Next arrows */}
+      <button
+        onClick={prev}
+        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-white transition-all hover:scale-110 z-10"
+        style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}
+        aria-label="Previous"
+      >
+        <ChevronLeft size={20} />
+      </button>
+      <button
+        onClick={next}
+        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-white transition-all hover:scale-110 z-10"
+        style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}
+        aria-label="Next"
+      >
+        <ChevronRight size={20} />
+      </button>
+
+      {/* Dots indicator */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrent(i)}
+            className="rounded-full transition-all"
+            style={{
+              width: i === current ? '24px' : '8px',
+              height: '8px',
+              background: i === current ? 'white' : 'rgba(255,255,255,0.5)',
+            }}
+            aria-label={`Slide ${i + 1}`}
+          />
+        ))}
       </div>
     </section>
   )
