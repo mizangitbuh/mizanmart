@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
+  FileText,
   LayoutDashboard,
   Package,
   Tag,
@@ -16,6 +17,7 @@ import {
   Home,
   ChevronRight,
   X,
+  User,
 } from 'lucide-react'
 
 interface Props {
@@ -66,7 +68,9 @@ const sections = [
   {
     title: 'SYSTEM',
     items: [
-      { href: '/admin/settings', label: 'Settings', icon: Settings, badge: 'NEW' },
+      { href: '/admin/profile', label: 'My Profile', icon: User },
+      { href: '/admin/audit-logs', label: 'Audit Logs', icon: FileText },
+      { href: '/admin/settings', label: 'Store Settings', icon: Settings },
     ],
   },
 ]

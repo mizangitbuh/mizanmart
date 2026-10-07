@@ -25,6 +25,8 @@ export default function CheckoutPage() {
   const [error, setError] = useState('')
   const [user, setUser] = useState<any>(null)
   const [appliedCoupon, setAppliedCoupon] = useState<CouponData | null>(null)
+  const [storeSettings, setStoreSettings] = useState<any>(null)
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'bkash' | 'nagad'>('cod')
 
   const [form, setForm] = useState({
     name: '',
@@ -35,8 +37,24 @@ export default function CheckoutPage() {
     notes: '',
   })
 
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((r) => r.json())
+      .then((data) => setStoreSettings(data))
+      .catch(() => {})
+  }, [])
+
   const subtotal = total()
-  const shipping = subtotal > 1000 ? 0 : 60
+  const isInsideDhaka =
+    form.city?.trim().toLowerCase().includes('dhaka') || form.city?.trim().includes('ঢাকা')
+  const insideShipping = Number(storeSettings?.inside_dhaka_shipping ?? 60)
+  const outsideShipping = Number(storeSettings?.outside_dhaka_shipping ?? 120)
+  const freeThreshold = Number(storeSettings?.free_shipping_threshold ?? 1000)
+  const freeEnabled = storeSettings?.free_shipping_enabled ?? true
+
+  const baseShipping = form.city ? (isInsideDhaka ? insideShipping : outsideShipping) : insideShipping
+  const isFree = freeEnabled && subtotal >= freeThreshold
+  const shipping = isFree ? 0 : baseShipping
   const discount = appliedCoupon?.discount || 0
   const grandTotal = Math.max(0, subtotal + shipping - discount)
 
@@ -74,6 +92,7 @@ export default function CheckoutPage() {
           couponCode: appliedCoupon?.code || null,
           couponId: appliedCoupon?.id || null,
           grandTotal,
+          paymentMethod,
         }),
       })
 
@@ -255,10 +274,10 @@ export default function CheckoutPage() {
 
             {/* Payment Method */}
             <div
-              className="p-5 md:p-6 rounded-[var(--radius-lg)] border"
+              className="p-5 md:p-6 rounded-[var(--radius-lg)] border space-y-3"
               style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
             >
-              <h2 className="text-lg font-black mb-5 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+              <h2 className="text-lg font-black mb-3 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
                 <span
                   className="w-6 h-6 rounded-full text-white flex items-center justify-center text-xs font-bold"
                   style={{ background: 'var(--color-primary)' }}
@@ -268,29 +287,121 @@ export default function CheckoutPage() {
                 Payment Method
               </h2>
 
-              <div
-                className="flex items-center gap-3 p-4 rounded-[var(--radius-md)] border-2"
-                style={{
-                  borderColor: 'var(--color-primary)',
-                  background: 'var(--color-primary-light)',
-                }}
-              >
-                <div
-                  className="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                  style={{ borderColor: 'var(--color-primary)' }}
-                >
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: 'var(--color-primary)' }} />
-                </div>
-                <CreditCard size={20} style={{ color: 'var(--color-primary)' }} />
-                <div className="flex-1">
-                  <div className="font-bold text-sm" style={{ color: 'var(--color-text)' }}>
-                    Cash on Delivery
+              <div className="space-y-2.5">
+                {/* Cash on Delivery */}
+                {storeSettings?.cod_enabled !== false && (
+                  <div
+                    onClick={() => setPaymentMethod('cod')}
+                    className={`flex items-center gap-3 p-4 rounded-[var(--radius-md)] border-2 cursor-pointer transition-all ${
+                      paymentMethod === 'cod'
+                        ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]'
+                        : 'border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]'
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        paymentMethod === 'cod' ? 'border-[var(--color-primary)]' : 'border-gray-400'
+                      }`}
+                    >
+                      {paymentMethod === 'cod' && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]" />
+                      )}
+                    </div>
+                    <CreditCard
+                      size={20}
+                      className={paymentMethod === 'cod' ? 'text-[var(--color-primary)]' : 'text-gray-500'}
+                    />
+                    <div className="flex-1">
+                      <div className="font-bold text-sm" style={{ color: 'var(--color-text)' }}>
+                        Cash on Delivery
+                      </div>
+                      <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                        Pay when you receive the order at your doorstep
+                      </div>
+                    </div>
+                    {paymentMethod === 'cod' && <Check size={18} className="text-[var(--color-primary)]" />}
                   </div>
-                  <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                    Pay when you receive the order
+                )}
+
+                {/* bKash */}
+                {storeSettings?.bkash_enabled && (
+                  <div
+                    onClick={() => setPaymentMethod('bkash')}
+                    className={`p-4 rounded-[var(--radius-md)] border-2 cursor-pointer transition-all space-y-2 ${
+                      paymentMethod === 'bkash'
+                        ? 'border-[#E2136E] bg-[#E2136E]/5'
+                        : 'border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          paymentMethod === 'bkash' ? 'border-[#E2136E]' : 'border-gray-400'
+                        }`}
+                      >
+                        {paymentMethod === 'bkash' && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-[#E2136E]" />
+                        )}
+                      </div>
+                      <div className="flex-1 font-bold text-sm text-[#E2136E]">
+                        বিকাশ পেমেন্ট (bKash)
+                      </div>
+                      {paymentMethod === 'bkash' && <Check size={18} className="text-[#E2136E]" />}
+                    </div>
+                    {paymentMethod === 'bkash' && (
+                      <div className="pl-8 text-xs space-y-1 text-[var(--color-text-muted)]">
+                        <div>
+                          নাম্বার:{' '}
+                          <strong className="text-[var(--color-text)] font-mono">
+                            {storeSettings.bkash_number || 'আমাদের টিম যোগাযোগ করবে'}
+                          </strong>{' '}
+                          ({storeSettings.bkash_type || 'personal'})
+                        </div>
+                        <div>অর্ডার প্লেস করার পর উল্লেখিত বিকাশ নম্বরে টাকা পাঠিয়ে অর্ডার সম্পন্ন করুন।</div>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <Check size={18} style={{ color: 'var(--color-primary)' }} />
+                )}
+
+                {/* Nagad */}
+                {storeSettings?.nagad_enabled && (
+                  <div
+                    onClick={() => setPaymentMethod('nagad')}
+                    className={`p-4 rounded-[var(--radius-md)] border-2 cursor-pointer transition-all space-y-2 ${
+                      paymentMethod === 'nagad'
+                        ? 'border-[#F7941D] bg-[#F7941D]/5'
+                        : 'border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          paymentMethod === 'nagad' ? 'border-[#F7941D]' : 'border-gray-400'
+                        }`}
+                      >
+                        {paymentMethod === 'nagad' && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-[#F7941D]" />
+                        )}
+                      </div>
+                      <div className="flex-1 font-bold text-sm text-[#F7941D]">
+                        নগদ পেমেন্ট (Nagad)
+                      </div>
+                      {paymentMethod === 'nagad' && <Check size={18} className="text-[#F7941D]" />}
+                    </div>
+                    {paymentMethod === 'nagad' && (
+                      <div className="pl-8 text-xs space-y-1 text-[var(--color-text-muted)]">
+                        <div>
+                          নাম্বার:{' '}
+                          <strong className="text-[var(--color-text)] font-mono">
+                            {storeSettings.nagad_number || 'আমাদের টিম যোগাযোগ করবে'}
+                          </strong>{' '}
+                          ({storeSettings.nagad_type || 'personal'})
+                        </div>
+                        <div>অর্ডার প্লেস করার পর উল্লেখিত নগদ নম্বরে টাকা পাঠিয়ে অর্ডার সম্পন্ন করুন।</div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

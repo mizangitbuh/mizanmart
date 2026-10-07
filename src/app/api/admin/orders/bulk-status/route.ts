@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logAudit } from '@/lib/audit'
 
 export async function POST(request: Request) {
   try {
@@ -31,6 +32,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
+    // Fetch orders BEFORE (for audit)
+    const { data: ordersBefore } = await supabase
+      .from('orders')
+      .select('id, order_number, status, total')
+      .in('id', orderIds)
+
     const { error } = await supabase
       .from('orders')
       .update({ status, updated_at: new Date().toISOString() })
@@ -39,6 +46,30 @@ export async function POST(request: Request) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    // ═══ AUDIT LOG ═══
+    await logAudit({
+      action: 'order.status_change',
+      entityType: 'order',
+      entityId: orderIds.join(','),
+      entityName: `${orderIds.length} orders → ${status}`,
+      changes: {
+        bulk_status_change: { old: null, new: status },
+        order_count: { old: null, new: orderIds.length },
+        affected_orders: {
+          old: null,
+          new: (ordersBefore || []).map((o) => ({
+            id: o.id,
+            order_number: o.order_number,
+            previous_status: o.status,
+            total: o.total,
+          })),
+        },
+      },
+      metadata: {
+        performed_at: new Date().toISOString(),
+      },
+    })
 
     return NextResponse.json({ success: true, affected: orderIds.length })
   } catch (err) {

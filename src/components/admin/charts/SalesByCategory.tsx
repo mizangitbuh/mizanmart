@@ -54,7 +54,7 @@ export function SalesByCategory({ data, title = 'Sales by Category' }: Props) {
                   borderRadius: '8px',
                   fontSize: '12px',
                 }}
-                formatter={(value: number) => [formatPrice(value), 'Revenue']}
+                formatter={(value: any) => [formatPrice(Number(value) || 0), 'Revenue']}
                 cursor={{ fill: 'var(--color-surface-hover)' }}
               />
               <Bar dataKey="revenue" radius={[6, 6, 0, 0]}>

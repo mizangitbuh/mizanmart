@@ -75,9 +75,9 @@ export function OrderStatusChart({ data, title = 'Order Status' }: Props) {
                     borderRadius: '8px',
                     fontSize: '12px',
                   }}
-                  formatter={(value: number, name: string) => [
+                  formatter={(value: any, name: any) => [
                     `${value} orders`,
-                    statusLabels[name] || name,
+                    statusLabels[name as string] || name,
                   ]}
                 />
               </PieChart>

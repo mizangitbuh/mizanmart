@@ -8,10 +8,11 @@ interface Props {
   children: React.ReactNode
   userName: string
   userEmail: string
+  userRole?: string
   notificationCount?: number
 }
 
-export function AdminShell({ children, userName, userEmail, notificationCount = 0 }: Props) {
+export function AdminShell({ children, userName, userEmail, userRole, notificationCount = 0 }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
@@ -23,6 +24,7 @@ export function AdminShell({ children, userName, userEmail, notificationCount = 
           onMenuClick={() => setSidebarOpen(true)}
           userName={userName}
           userEmail={userEmail}
+          userRole={userRole}
           notificationCount={notificationCount}
         />
 

@@ -26,34 +26,48 @@ export function Navbar() {
     { name: 'General', href: '/products?category=general' },
   ]
 
+  const [storeSettings, setStoreSettings] = useState<any>(null)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((r) => r.json())
+      .then((d) => setStoreSettings(d))
+      .catch(() => {})
+  }, [])
+
   return (
     <>
       {/* Announcement Bar */}
-      <div
-        style={{
-          background: 'linear-gradient(90deg, #B91C2C 0%, #D92D3F 50%, #B91C2C 100%)',
-          color: '#FFFFFF',
-          padding: '8px 0',
-          textAlign: 'center',
-          fontSize: '13px',
-          fontWeight: 500,
-        }}
-      >
+      {storeSettings?.announcement_enabled !== false && (
         <div
           style={{
-            maxWidth: '1280px',
-            margin: '0 auto',
-            padding: '0 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
+            background: 'linear-gradient(90deg, #B91C2C 0%, #D92D3F 50%, #B91C2C 100%)',
+            color: '#FFFFFF',
+            padding: '8px 0',
+            textAlign: 'center',
+            fontSize: '13px',
+            fontWeight: 500,
           }}
         >
-          <Phone size={12} />
-          <span>FREE DELIVERY on orders over ৳1000 | Hotline: 01871418973</span>
+          <div
+            style={{
+              maxWidth: '1280px',
+              margin: '0 auto',
+              padding: '0 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            <Phone size={12} />
+            <span>
+              {storeSettings?.announcement_text || 'FREE DELIVERY on orders over ৳1000'} | Hotline:{' '}
+              {storeSettings?.support_phone || '01871418973'}
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
       <header
         style={{

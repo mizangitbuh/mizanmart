@@ -46,6 +46,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <AdminShell
       userName={profile.full_name || user.email || 'Admin'}
       userEmail={profile.email || user.email || ''}
+      userRole={profile.role || 'admin'}
       notificationCount={0}
     >
       {children}

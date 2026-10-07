@@ -3,12 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
-import { Menu, Search, Bell, ChevronDown, User, LogOut, Settings as SettingsIcon } from 'lucide-react'
+import { Menu, Search, Bell, ChevronDown, User, LogOut, Settings as SettingsIcon, Shield, ExternalLink } from 'lucide-react'
 
 interface Props {
   onMenuClick: () => void
   userName: string
   userEmail: string
+  userRole?: string
   notificationCount?: number
 }
 
@@ -23,7 +24,9 @@ const pageTitles: Record<string, string> = {
   '/admin/coupons': 'Coupons',
   '/admin/banners': 'Banners',
   '/admin/analytics': 'Analytics',
-  '/admin/settings': 'Settings',
+  '/admin/audit-logs': 'Audit Logs',
+  '/admin/settings': 'Store Settings',
+  '/admin/profile': 'Admin Profile',
 }
 
 function getPageTitle(pathname: string): string {
@@ -44,7 +47,7 @@ function getPageTitle(pathname: string): string {
   return 'Admin'
 }
 
-export function AdminHeader({ onMenuClick, userName, userEmail, notificationCount = 0 }: Props) {
+export function AdminHeader({ onMenuClick, userName, userEmail, userRole = 'admin', notificationCount = 0 }: Props) {
   const pathname = usePathname()
   const [profileOpen, setProfileOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -155,7 +158,7 @@ export function AdminHeader({ onMenuClick, userName, userEmail, notificationCoun
               className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-[var(--radius-md)] hover:bg-[var(--color-surface-hover)] transition-colors"
             >
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow-sm"
                 style={{ background: 'var(--color-primary)' }}
               >
                 {userInitial}
@@ -175,7 +178,7 @@ export function AdminHeader({ onMenuClick, userName, userEmail, notificationCoun
 
             {profileOpen && (
               <div
-                className="absolute right-0 top-full mt-2 w-56 rounded-[var(--radius-lg)] border shadow-lg overflow-hidden z-50"
+                className="absolute right-0 top-full mt-2 w-64 rounded-[var(--radius-lg)] border shadow-xl overflow-hidden z-50 animate-in fade-in-50 zoom-in-95 duration-100"
                 style={{
                   background: 'var(--color-surface)',
                   borderColor: 'var(--color-border)',
@@ -186,8 +189,13 @@ export function AdminHeader({ onMenuClick, userName, userEmail, notificationCoun
                   className="px-4 py-3 border-b"
                   style={{ borderColor: 'var(--color-border)' }}
                 >
-                  <div className="font-bold text-sm truncate" style={{ color: 'var(--color-text)' }}>
-                    {userName}
+                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                    <span className="font-bold text-sm truncate" style={{ color: 'var(--color-text)' }}>
+                      {userName}
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex-shrink-0">
+                      {userRole === 'admin' ? 'Admin' : userRole}
+                    </span>
                   </div>
                   <div className="text-xs truncate" style={{ color: 'var(--color-text-muted)' }}>
                     {userEmail}
@@ -195,39 +203,68 @@ export function AdminHeader({ onMenuClick, userName, userEmail, notificationCoun
                 </div>
 
                 {/* Menu */}
-                <div className="p-1">
+                <div className="p-1.5 space-y-0.5">
                   <Link
-                    href="/admin/settings"
+                    href="/admin/profile"
                     onClick={() => setProfileOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] text-sm hover:bg-[var(--color-surface-hover)] transition-colors"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium hover:bg-[var(--color-surface-hover)] transition-colors"
                     style={{ color: 'var(--color-text)' }}
                   >
-                    <User size={14} style={{ color: 'var(--color-text-muted)' }} />
+                    <User size={15} style={{ color: 'var(--color-primary)' }} />
                     My Profile
                   </Link>
                   <Link
                     href="/admin/settings"
                     onClick={() => setProfileOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] text-sm hover:bg-[var(--color-surface-hover)] transition-colors"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium hover:bg-[var(--color-surface-hover)] transition-colors"
                     style={{ color: 'var(--color-text)' }}
                   >
-                    <SettingsIcon size={14} style={{ color: 'var(--color-text-muted)' }} />
-                    Settings
+                    <SettingsIcon size={15} style={{ color: 'var(--color-text-muted)' }} />
+                    Store Settings
+                  </Link>
+                  <Link
+                    href="/admin/audit-logs"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium hover:bg-[var(--color-surface-hover)] transition-colors"
+                    style={{ color: 'var(--color-text)' }}
+                  >
+                    <Shield size={15} style={{ color: 'var(--color-text-muted)' }} />
+                    Audit Logs
+                  </Link>
+                </div>
+
+                {/* Secondary actions */}
+                <div
+                  className="p-1.5 border-t space-y-0.5"
+                  style={{ borderColor: 'var(--color-border)' }}
+                >
+                  <Link
+                    href="/"
+                    target="_blank"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center justify-between px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium hover:bg-[var(--color-surface-hover)] transition-colors"
+                    style={{ color: 'var(--color-text)' }}
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <ExternalLink size={15} style={{ color: 'var(--color-text-muted)' }} />
+                      View Live Store
+                    </span>
+                    <span className="text-[10px] text-[var(--color-text-muted)]">↗</span>
                   </Link>
                 </div>
 
                 {/* Sign out */}
                 <div
-                  className="p-1 border-t"
+                  className="p-1.5 border-t"
                   style={{ borderColor: 'var(--color-border)' }}
                 >
                   <form action="/api/auth/signout" method="POST">
                     <button
                       type="submit"
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] text-sm transition-colors hover:bg-[var(--color-surface-hover)] text-left"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-md)] text-sm font-semibold transition-colors hover:bg-red-500/10 text-left"
                       style={{ color: 'var(--color-error)' }}
                     >
-                      <LogOut size={14} />
+                      <LogOut size={15} />
                       Sign Out
                     </button>
                   </form>

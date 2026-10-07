@@ -78,7 +78,7 @@ export function RevenueChart({ data, title = 'Revenue Overview' }: Props) {
                   borderRadius: '8px',
                   fontSize: '12px',
                 }}
-                formatter={(value: number) => [formatPrice(value), 'Revenue']}
+                formatter={(value: any) => [formatPrice(Number(value) || 0), 'Revenue']}
                 labelStyle={{ color: 'var(--color-text)', fontWeight: 700 }}
               />
               <Area

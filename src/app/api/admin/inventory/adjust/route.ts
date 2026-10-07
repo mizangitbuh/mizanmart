@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logAudit } from '@/lib/audit'
 
 interface AdjustRequest {
   productId: string
@@ -17,7 +18,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
-    // Verify admin
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -39,7 +39,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid stock value' }, { status: 400 })
     }
 
-    // Get current stock for logging
     const { data: product, error: fetchError } = await supabase
       .from('products')
       .select('stock_quantity, name')
@@ -52,7 +51,6 @@ export async function POST(request: Request) {
 
     const previousStock = product.stock_quantity
 
-    // Update stock
     const { error: updateError } = await supabase
       .from('products')
       .update({
@@ -66,7 +64,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: updateError.message }, { status: 500 })
     }
 
-    // Try to log to stock_history (if table exists)
+    // ═══ AUDIT LOG ═══
+    await logAudit({
+      action: 'inventory.adjust',
+      entityType: 'product',
+      entityId: productId,
+      entityName: product.name,
+      changes: {
+        stock_quantity: { old: previousStock, new: newStock },
+        difference: { old: null, new: newStock - previousStock },
+      },
+      metadata: {
+        reason,
+        notes: notes || null,
+      },
+    })
+
+    // Optional: stock_history table (if exists)
     try {
       await supabase.from('stock_history').insert({
         product_id: productId,

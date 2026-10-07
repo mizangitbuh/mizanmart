@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { checkoutLimiter, getClientIp } from '@/lib/rate-limit'
+import { getStoreSettings } from '@/lib/settings'
 
 // ═══════════════════════════════════════════════════════════
 // SECURE CHECKOUT API with Rate Limiting
@@ -30,6 +31,7 @@ interface CheckoutRequest {
   }
   items: CheckoutItem[]
   couponCode?: string | null
+  paymentMethod?: string
 }
 
 export async function POST(request: Request) {
@@ -161,10 +163,22 @@ export async function POST(request: Request) {
     }
 
     // ═══════════════════════════════════════════════════════════
-    // SERVER-SIDE SHIPPING
+    // SERVER-SIDE SHIPPING (Dynamic from Store Settings)
     // ═══════════════════════════════════════════════════════════
 
-    const shippingCost = serverSubtotal >= 1000 ? 0 : 60
+    const settings = await getStoreSettings()
+    const isInsideDhaka =
+      form.city?.trim().toLowerCase().includes('dhaka') ||
+      form.city?.trim().includes('ঢাকা')
+    const baseShipping = isInsideDhaka
+      ? Number(settings.inside_dhaka_shipping)
+      : Number(settings.outside_dhaka_shipping)
+
+    const isFreeShipping =
+      settings.free_shipping_enabled &&
+      serverSubtotal >= Number(settings.free_shipping_threshold)
+
+    const shippingCost = isFreeShipping ? 0 : baseShipping
 
     // ═══════════════════════════════════════════════════════════
     // SERVER-SIDE COUPON VERIFICATION
@@ -231,7 +245,7 @@ export async function POST(request: Request) {
         shipping_cost: shippingCost,
         discount: couponDiscount,
         total: grandTotal,
-        payment_method: 'cod',
+        payment_method: body.paymentMethod || 'cod',
         payment_status: 'pending',
         customer_name: form.name.trim(),
         customer_phone: form.phone.trim(),
