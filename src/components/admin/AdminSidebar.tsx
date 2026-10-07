@@ -19,6 +19,7 @@ import {
   X,
   User,
   Star,
+  Activity,
 } from 'lucide-react'
 
 interface Props {
@@ -42,34 +43,24 @@ const sections = [
     ],
   },
   {
-    title: 'ORDERS',
+    title: 'ORDERS & CUSTOMERS',
     items: [
-      { href: '/admin/orders', label: 'All Orders', icon: ShoppingBag },
+      { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
+      { href: '/admin/customers', label: 'Customers', icon: Users },
     ],
   },
   {
-    title: 'CUSTOMERS',
+    title: 'MARKETING & SALES',
     items: [
-      { href: '/admin/customers', label: 'All Customers', icon: Users },
+      { href: '/admin/coupons', label: 'Coupons', icon: Ticket, badge: 'OFF' },
+      { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
+      { href: '/admin/reviews', label: 'Reviews', icon: Star, badge: 'REVIEWS' },
     ],
   },
   {
-    title: 'MARKETING',
+    title: 'ANALYTICS & SYSTEM',
     items: [
-      { href: '/admin/coupons', label: 'Coupons', icon: Ticket, badge: 'NEW' },
-      { href: '/admin/banners', label: 'Banners', icon: ImageIcon, badge: 'NEW' },
-      { href: '/admin/reviews', label: 'Reviews', icon: Star, badge: 'NEW' },
-    ],
-  },
-  {
-    title: 'ANALYTICS',
-    items: [
-      { href: '/admin/analytics', label: 'Analytics', icon: BarChart3, badge: 'NEW' },
-    ],
-  },
-  {
-    title: 'SYSTEM',
-    items: [
+      { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
       { href: '/admin/profile', label: 'My Profile', icon: User },
       { href: '/admin/audit-logs', label: 'Audit Logs', icon: FileText },
       { href: '/admin/settings', label: 'Store Settings', icon: Settings },
@@ -96,7 +87,7 @@ export function AdminSidebar({ isOpen, onClose }: Props) {
       )}
 
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-50 lg:z-auto h-screen w-64 flex-shrink-0 flex flex-col transition-transform duration-300 ${
+        className={`fixed lg:sticky top-0 left-0 z-50 lg:z-auto h-screen w-60 flex-shrink-0 flex flex-col transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
         style={{
@@ -104,14 +95,14 @@ export function AdminSidebar({ isOpen, onClose }: Props) {
           borderRight: '1px solid var(--color-border)',
         }}
       >
-        {/* Logo */}
+        {/* Logo Header */}
         <div
-          className="flex items-center justify-between px-5 py-5 border-b"
+          className="flex items-center justify-between px-4 py-3.5 border-b"
           style={{ borderColor: 'var(--color-border)' }}
         >
           <Link href="/admin" className="flex items-center gap-2">
             <div
-              className="w-8 h-8 rounded flex items-center justify-center text-white font-black text-sm"
+              className="w-7 h-7 rounded flex items-center justify-center text-white font-black text-xs"
               style={{ background: 'var(--color-primary)' }}
             >
               M
@@ -120,8 +111,8 @@ export function AdminSidebar({ isOpen, onClose }: Props) {
               <div className="font-black text-sm leading-tight" style={{ color: 'var(--color-text)' }}>
                 MizanMart
               </div>
-              <div className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-primary)' }}>
-                Admin
+              <div className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'var(--color-primary)' }}>
+                Seller Central
               </div>
             </div>
           </Link>
@@ -136,59 +127,74 @@ export function AdminSidebar({ isOpen, onClose }: Props) {
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-3">
+        {/* Navigation items - dense */}
+        <nav className="flex-1 overflow-y-auto py-2.5 space-y-3">
           {sections.map((section) => (
-            <div key={section.title} className="mb-4">
+            <div key={section.title}>
               <div
-                className="px-5 py-1.5 text-[10px] font-bold uppercase tracking-wider"
+                className="px-4 py-1 text-[9px] font-black uppercase tracking-wider"
                 style={{ color: 'var(--color-text-muted)' }}
               >
                 {section.title}
               </div>
-              {section.items.map((item) => {
-                const Icon = item.icon
-                const active = isActive(item.href)
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={onClose}
-                    className="mx-2 px-3 py-2 rounded-[var(--radius-md)] flex items-center gap-3 text-sm transition-colors"
-                    style={{
-                      background: active ? 'var(--color-primary-light)' : 'transparent',
-                      color: active ? 'var(--color-primary)' : 'var(--color-text)',
-                      fontWeight: active ? 600 : 500,
-                    }}
-                  >
-                    <Icon size={16} style={{ color: active ? 'var(--color-primary)' : 'var(--color-text-muted)' }} />
-                    <span className="flex-1">{item.label}</span>
-                    {item.badge && (
-                      <span
-                        className="text-[9px] font-bold px-1.5 py-0.5 rounded"
-                        style={{ background: 'var(--color-primary)', color: 'white' }}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                    {active && <ChevronRight size={14} />}
-                  </Link>
-                )
-              })}
+              <div className="space-y-0.5">
+                {section.items.map((item) => {
+                  const Icon = item.icon
+                  const active = isActive(item.href)
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClose}
+                      className="mx-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] flex items-center gap-2.5 text-xs transition-all"
+                      style={{
+                        background: active ? 'var(--color-primary-light)' : 'transparent',
+                        color: active ? 'var(--color-primary)' : 'var(--color-text)',
+                        fontWeight: active ? 700 : 500,
+                        borderLeft: active ? '3px solid var(--color-primary)' : '3px solid transparent',
+                      }}
+                    >
+                      <Icon size={15} style={{ color: active ? 'var(--color-primary)' : 'var(--color-text-muted)' }} />
+                      <span className="flex-1 truncate">{item.label}</span>
+                      {item.badge && (
+                        <span
+                          className="text-[8px] font-bold px-1.5 py-0.2 rounded"
+                          style={{ background: 'var(--color-primary)', color: 'white' }}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                      {active && <ChevronRight size={12} />}
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
           ))}
         </nav>
 
-        {/* Footer — View Store */}
-        <div className="border-t p-3" style={{ borderColor: 'var(--color-border)' }}>
+        {/* Store Status Indicator & View Store Link */}
+        <div className="border-t p-3 space-y-2" style={{ borderColor: 'var(--color-border)', background: 'var(--color-background)' }}>
+          {/* Store status pill */}
+          <div className="flex items-center justify-between px-2 py-1.5 rounded border text-[11px]" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
+            <span className="flex items-center gap-1.5 font-bold" style={{ color: 'var(--color-text)' }}>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Store: <span className="text-emerald-600">LIVE</span>
+            </span>
+            <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>Online</span>
+          </div>
+
           <Link
             href="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-sm font-medium transition-colors hover:bg-[var(--color-surface-hover)]"
+            target="_blank"
+            className="flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold hover:bg-[var(--color-surface)] transition-colors"
             style={{ color: 'var(--color-text)' }}
           >
-            <Home size={16} style={{ color: 'var(--color-text-muted)' }} />
-            <span>View Store</span>
-            <ChevronRight size={14} style={{ color: 'var(--color-text-muted)' }} />
+            <span className="flex items-center gap-2">
+              <Home size={14} style={{ color: 'var(--color-primary)' }} />
+              <span>View Storefront</span>
+            </span>
+            <ChevronRight size={12} style={{ color: 'var(--color-text-muted)' }} />
           </Link>
         </div>
       </aside>
