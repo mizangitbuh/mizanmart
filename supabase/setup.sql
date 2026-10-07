@@ -58,6 +58,8 @@ CREATE TABLE IF NOT EXISTS public.orders (
   customer_phone TEXT,
   customer_email TEXT,
   notes TEXT,
+  discount DECIMAL(10,2) DEFAULT 0,
+  coupon_code TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
