@@ -1,20 +1,40 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Truck, RotateCcw, Package, Star } from 'lucide-react'
+import { FileText, Truck, RotateCcw, Package, Star, PenSquare, Clock } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { ReviewList, type ReviewItem, type ReviewStats } from '@/components/shop/ReviewList'
+import { ReviewForm } from '@/components/shop/ReviewForm'
 
 interface Props {
+  productId: string
   description: string | null
   sku: string | null
   category: string | null
   rating?: number
   reviewCount?: number
+  reviews?: ReviewItem[]
+  stats?: ReviewStats
+  isLoggedIn?: boolean
+  userReviewStatus?: 'pending' | 'approved' | 'rejected' | null
 }
 
 type TabKey = 'description' | 'delivery' | 'returns' | 'reviews'
 
-export function ProductDetailTabs({ description, sku, category, rating = 0, reviewCount = 0 }: Props) {
+export function ProductDetailTabs({
+  productId,
+  description,
+  sku,
+  category,
+  rating = 0,
+  reviewCount = 0,
+  reviews = [],
+  stats,
+  isLoggedIn = false,
+  userReviewStatus = null,
+}: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>('description')
+  const [showForm, setShowForm] = useState(false)
 
   const tabs: { key: TabKey; label: string; icon: any }[] = [
     { key: 'description', label: 'Description', icon: FileText },
@@ -22,6 +42,15 @@ export function ProductDetailTabs({ description, sku, category, rating = 0, revi
     { key: 'returns', label: 'Returns', icon: RotateCcw },
     { key: 'reviews', label: 'Reviews', icon: Star },
   ]
+
+  // Build stats fallback if not provided
+  const effectiveStats: ReviewStats = stats || {
+    average: rating,
+    count: reviewCount,
+    distribution: [5, 4, 3, 2, 1].map((star) => ({ star, count: 0 })),
+  }
+
+  const canWriteReview = isLoggedIn && !userReviewStatus
 
   return (
     <div className="rounded-[var(--radius-lg)] border bg-[var(--color-surface)] overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
@@ -42,6 +71,17 @@ export function ProductDetailTabs({ description, sku, category, rating = 0, revi
             >
               <Icon size={16} />
               {tab.label}
+              {tab.key === 'reviews' && effectiveStats.count > 0 && (
+                <span
+                  className="text-[10px] font-bold px-1.5 rounded-full"
+                  style={{
+                    background: active ? 'var(--color-primary)' : 'var(--color-border)',
+                    color: active ? 'white' : 'var(--color-text-muted)',
+                  }}
+                >
+                  {effectiveStats.count}
+                </span>
+              )}
               {active && (
                 <span
                   className="absolute bottom-0 left-0 right-0 h-0.5"
@@ -126,17 +166,67 @@ export function ProductDetailTabs({ description, sku, category, rating = 0, revi
         )}
 
         {activeTab === 'reviews' && (
-          <div className="text-center py-8">
-            <Star size={40} className="mx-auto mb-3 star-filled fill-current" />
-            <div className="text-2xl font-black mb-1" style={{ color: 'var(--color-text)' }}>
-              {rating > 0 ? rating.toFixed(1) : 'No ratings yet'}
+          <div className="space-y-5">
+            {/* Action bar — write review OR status */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                {effectiveStats.count > 0
+                  ? `${effectiveStats.count} approved review${effectiveStats.count !== 1 ? 's' : ''}`
+                  : 'Share your thoughts'}
+              </div>
+
+              {userReviewStatus === 'pending' && (
+                <div
+                  className="inline-flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-[var(--radius-md)]"
+                  style={{ background: '#fef3c7', color: '#92400e' }}
+                >
+                  <Clock size={12} />
+                  Your review is pending approval
+                </div>
+              )}
+
+              {userReviewStatus === 'approved' && (
+                <div
+                  className="inline-flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-[var(--radius-md)]"
+                  style={{ background: '#dcfce7', color: '#16a34a' }}
+                >
+                  ✓ You reviewed this product
+                </div>
+              )}
+
+              {!isLoggedIn && (
+                <a
+                  href="/login"
+                  className="text-xs font-bold"
+                  style={{ color: 'var(--color-primary)' }}
+                >
+                  Sign in to write a review →
+                </a>
+              )}
+
+              {canWriteReview && !showForm && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setShowForm(true)}
+                >
+                  <PenSquare size={14} />
+                  Write a Review
+                </Button>
+              )}
             </div>
-            <div className="text-sm mb-4" style={{ color: 'var(--color-text-muted)' }}>
-              {reviewCount > 0 ? `Based on ${reviewCount} reviews` : 'Be the first to review'}
-            </div>
-            <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-              Customer reviews coming soon
-            </div>
+
+            {/* Form */}
+            {showForm && (
+              <ReviewForm
+                productId={productId}
+                onSuccess={() => setShowForm(false)}
+                onCancel={() => setShowForm(false)}
+              />
+            )}
+
+            {/* List */}
+            <ReviewList reviews={reviews} stats={effectiveStats} />
           </div>
         )}
       </div>

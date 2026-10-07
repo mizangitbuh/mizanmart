@@ -7,20 +7,13 @@ import { ProductDetailTabs } from '@/components/shop/ProductDetailTabs'
 import { RelatedProducts } from '@/components/shop/RelatedProducts'
 import { ProductBuyPanel } from '@/components/shop/ProductBuyPanel'
 import { Star, Truck, Shield, RotateCcw } from 'lucide-react'
+import { StarRating } from '@/components/shop/StarRating'
+import type { ReviewItem, ReviewStats } from '@/components/shop/ReviewList'
 
 export const dynamic = 'force-dynamic'
 
 interface Props {
   params: Promise<{ slug: string }>
-}
-
-function hashString(str: string): number {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i)
-    hash = hash & hash
-  }
-  return Math.abs(hash)
 }
 
 export default async function ProductPage({ params }: Props) {
@@ -45,11 +38,50 @@ export default async function ProductPage({ params }: Props) {
     ? Math.round(((product.compare_price - product.price) / product.compare_price) * 100)
     : 0
 
-  const hash = hashString(product.id)
-  const rating = 4 + (hash % 10) / 10
-  const reviewCount = 20 + (hash % 480)
-
   const categoryData = Array.isArray(product.category) ? product.category[0] : product.category
+
+  // ─── Fetch approved reviews + stats ───
+  const { data: reviewsData } = await supabase
+    .from('reviews')
+    .select('id, rating, title, body, order_id, created_at, user_id, profiles(full_name)')
+    .eq('product_id', product.id)
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  const reviewsList: ReviewItem[] = (reviewsData || []) as unknown as ReviewItem[]
+  const reviewCount = reviewsList.length
+  const rating = reviewCount > 0
+    ? reviewsList.reduce((sum, r) => sum + Number(r.rating), 0) / reviewCount
+    : 0
+
+  const stats: ReviewStats = {
+    average: Math.round(rating * 10) / 10,
+    count: reviewCount,
+    distribution: [5, 4, 3, 2, 1].map((star) => ({
+      star,
+      count: reviewsList.filter((r) => r.rating === star).length,
+    })),
+  }
+
+  // ─── User's own review status ───
+  const { data: { user } } = await supabase.auth.getUser()
+  let userReviewStatus: 'pending' | 'approved' | 'rejected' | null = null
+
+  if (user) {
+    const { data: userReview } = await supabase
+      .from('reviews')
+      .select('status')
+      .eq('product_id', product.id)
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (userReview?.status) {
+      userReviewStatus = userReview.status as typeof userReviewStatus
+    }
+  }
+
+  const isLoggedIn = !!user
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-background)' }}>
@@ -88,20 +120,18 @@ export default async function ProductPage({ params }: Props) {
 
             {/* Rating + Stock */}
             <div className="flex items-center gap-4 mb-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <div className="flex">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star
-                      key={s}
-                      size={16}
-                      className={s <= Math.round(rating) ? 'star-filled fill-current' : 'star-empty'}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                  {rating.toFixed(1)} ({reviewCount} reviews)
+              {reviewCount > 0 ? (
+                <StarRating
+                  rating={rating}
+                  size={16}
+                  showValue
+                  count={reviewCount}
+                />
+              ) : (
+                <span className="text-sm italic" style={{ color: 'var(--color-text-muted)' }}>
+                  No reviews yet
                 </span>
-              </div>
+              )}
               {inStock ? (
                 <span className="text-sm font-semibold" style={{ color: 'var(--color-success)' }}>
                   ✓ In Stock
@@ -187,11 +217,16 @@ export default async function ProductPage({ params }: Props) {
         {/* Tabs Section */}
         <div className="mt-8">
           <ProductDetailTabs
+            productId={product.id}
             description={product.description}
             sku={product.sku}
             category={categoryData?.name || null}
-            rating={rating}
-            reviewCount={reviewCount}
+            rating={stats.average}
+            reviewCount={stats.count}
+            reviews={reviewsList}
+            stats={stats}
+            isLoggedIn={isLoggedIn}
+            userReviewStatus={userReviewStatus}
           />
         </div>
 
