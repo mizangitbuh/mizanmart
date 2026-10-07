@@ -2,11 +2,10 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { ShoppingCart, Star } from 'lucide-react'
+import { ShoppingCart, Star, Heart } from 'lucide-react'
 import { useCartStore } from '@/stores/cart'
 import { formatPrice } from '@/lib/utils'
 import { useState } from 'react'
-import { Badge } from '@/components/ui/Badge'
 import { WishlistButton } from '@/components/shop/WishlistButton'
 
 export interface ProductCardData {
@@ -30,7 +29,12 @@ function hashString(str: string): number {
   return Math.abs(hash)
 }
 
-export function ProductCard({ product }: { product: ProductCardData }) {
+interface Props {
+  product: ProductCardData
+  compact?: boolean  // Flash Deals carousel-এ ছোট সাইজের জন্য
+}
+
+export function ProductCard({ product, compact = false }: Props) {
   const addItem = useCartStore((s) => s.addItem)
   const [justAdded, setJustAdded] = useState(false)
 
@@ -46,10 +50,11 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const outOfStock = product.stock_quantity !== undefined && product.stock_quantity <= 0
   const lowStock = product.stock_quantity !== undefined && product.stock_quantity > 0 && product.stock_quantity <= 5
 
-  // ⭐ Deterministic rating — same product always same value
+  // ⭐ Deterministic rating
   const hash = hashString(product.id)
-  const rating = 4 + (hash % 10) / 10 // 4.0 - 4.9
-  const reviewCount = 20 + (hash % 480) // 20 - 499
+  const rating = 4 + (hash % 10) / 10   // 4.0 - 4.9
+  const reviewCount = 20 + (hash % 480)  // 20 - 499
+  const soldCount = 50 + (hash % 950)    // 50 - 999
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -66,95 +71,210 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     setTimeout(() => setJustAdded(false), 1500)
   }
 
+  const stars = Array.from({ length: 5 }, (_, i) => i + 1)
+
+  if (compact) {
+    // Flash Deals compact card
+    return (
+      <Link href={`/product/${product.slug}`} className="group block h-full">
+        <div
+          className="product-card rounded-[var(--radius-md)] overflow-hidden h-full flex flex-col border"
+          style={{ background: 'var(--color-background)', borderColor: 'var(--color-border)' }}
+        >
+          <div className="relative aspect-square overflow-hidden">
+            <Image
+              src={image}
+              alt={product.name}
+              fill
+              sizes="180px"
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            {discount > 0 && (
+              <div
+                className="absolute top-1.5 left-1.5 text-[10px] font-black text-white px-1.5 py-0.5 rounded"
+                style={{ background: 'var(--color-primary)' }}
+              >
+                -{discount}%
+              </div>
+            )}
+            {outOfStock && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <span className="text-white text-[10px] font-bold px-2 py-1 rounded" style={{ background: 'var(--color-error)' }}>
+                  Stock নেই
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="p-2 flex flex-col flex-1">
+            <p className="text-xs font-medium line-clamp-2 mb-1" style={{ color: 'var(--color-text)', minHeight: '32px' }}>
+              {product.name}
+            </p>
+            <div className="flex items-center gap-1 mb-1">
+              <div className="flex">
+                {stars.map((star) => (
+                  <Star
+                    key={star}
+                    size={9}
+                    style={{ color: star <= Math.round(rating) ? '#F59E0B' : 'var(--color-border)' }}
+                    fill={star <= Math.round(rating) ? '#F59E0B' : 'none'}
+                  />
+                ))}
+              </div>
+              <span className="text-[9px]" style={{ color: 'var(--color-text-muted)' }}>({reviewCount})</span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-sm font-black" style={{ color: 'var(--color-primary)' }}>
+                {formatPrice(product.price)}
+              </span>
+              {product.compare_price && (
+                <span className="text-[9px] line-through" style={{ color: 'var(--color-text-muted)' }}>
+                  {formatPrice(product.compare_price)}
+                </span>
+              )}
+            </div>
+            {!outOfStock && (
+              <button
+                onClick={handleAdd}
+                className="mt-2 w-full py-1.5 text-[10px] font-bold text-white rounded transition-colors"
+                style={{ background: justAdded ? 'var(--color-success)' : 'var(--color-primary)' }}
+              >
+                {justAdded ? '✓ Added!' : '+ Cart'}
+              </button>
+            )}
+          </div>
+        </div>
+      </Link>
+    )
+  }
+
+  // Full card — dense Amazon-style
   return (
     <Link href={`/product/${product.slug}`} className="group block">
       <div
-        className="product-card rounded-[var(--radius-lg)] overflow-hidden h-full flex flex-col"
-        style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
+        className="product-card rounded-[var(--radius-md)] overflow-hidden h-full flex flex-col border"
+        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       >
+        {/* Image */}
         <div className="relative aspect-square overflow-hidden" style={{ background: 'var(--color-background)' }}>
           <Image
             src={image}
             alt={product.name}
             fill
-            sizes="(max-width: 768px) 50vw, 25vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
 
+          {/* Discount badge */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {discount > 0 && <Badge variant="sale" size="sm">-{discount}%</Badge>}
-            {discount === 0 && <Badge variant="new" size="sm">NEW</Badge>}
+            {discount > 0 && (
+              <span
+                className="text-[11px] font-black text-white px-2 py-0.5 rounded"
+                style={{ background: 'var(--color-primary)' }}
+              >
+                -{discount}%
+              </span>
+            )}
+            {discount === 0 && (
+              <span
+                className="text-[10px] font-black text-white px-2 py-0.5 rounded"
+                style={{ background: 'var(--color-success)' }}
+              >
+                NEW
+              </span>
+            )}
           </div>
 
+          {/* Out of stock overlay */}
           {outOfStock && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="text-white text-sm font-bold px-3 py-1.5 rounded" style={{ background: 'var(--color-error)' }}>
-                OUT OF STOCK
+              <span className="text-white text-xs font-bold px-3 py-1.5 rounded" style={{ background: 'var(--color-error)' }}>
+                STOCK নেই
               </span>
             </div>
           )}
 
+          {/* Low stock */}
           {lowStock && !outOfStock && (
             <div className="absolute bottom-2 left-2">
-              <Badge variant="warning" size="sm">Only {product.stock_quantity} left</Badge>
+              <span
+                className="text-[10px] font-bold text-white px-2 py-0.5 rounded"
+                style={{ background: 'var(--color-warning)' }}
+              >
+                মাত্র {product.stock_quantity}টি বাকি!
+              </span>
             </div>
           )}
 
+          {/* Wishlist */}
           <div className="absolute top-2 right-2">
-            <WishlistButton
-              productId={product.id}
-              initialWishlisted={product.initialWishlisted || false}
-            />
+            <WishlistButton productId={product.id} initialWishlisted={product.initialWishlisted || false} />
           </div>
 
+          {/* Quick Add to Cart — hover reveal */}
           {!outOfStock && (
             <button
               onClick={handleAdd}
-              className="absolute bottom-2 left-2 right-2 py-2 text-white text-xs font-bold rounded opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all flex items-center justify-center gap-1"
+              className="absolute bottom-2 left-2 right-2 py-2 text-white text-xs font-bold rounded opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all flex items-center justify-center gap-1.5"
               style={{ background: justAdded ? 'var(--color-success)' : 'var(--color-primary)' }}
             >
-              <ShoppingCart size={14} />
-              {justAdded ? 'Added!' : 'Add to Cart'}
+              <ShoppingCart size={13} />
+              {justAdded ? '✓ কার্টে যোগ হয়েছে!' : 'কার্টে যোগ করুন'}
             </button>
           )}
         </div>
 
-        <div className="p-3 flex flex-col flex-1">
+        {/* Info */}
+        <div className="p-2.5 flex flex-col flex-1">
+          {/* Title */}
           <h3
-            className="text-sm font-medium line-clamp-2 mb-2 min-h-[40px] group-hover:text-[var(--color-primary)] transition-colors"
-            style={{ color: 'var(--color-text)' }}
+            className="text-xs font-semibold line-clamp-2 mb-1.5 group-hover:text-[var(--color-primary)] transition-colors leading-snug"
+            style={{ color: 'var(--color-text)', minHeight: '32px' }}
           >
             {product.name}
           </h3>
 
-          <div className="flex items-center gap-1 mb-2">
+          {/* Stars */}
+          <div className="flex items-center gap-1 mb-1.5">
             <div className="flex">
-              {[1, 2, 3, 4, 5].map((star) => (
+              {stars.map((star) => (
                 <Star
                   key={star}
                   size={11}
-                  className={star <= Math.round(rating) ? 'star-filled fill-current' : 'star-empty'}
+                  style={{ color: star <= Math.round(rating) ? '#F59E0B' : 'var(--color-border)' }}
+                  fill={star <= Math.round(rating) ? '#F59E0B' : 'none'}
                 />
               ))}
             </div>
+            <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+              {rating.toFixed(1)}
+            </span>
             <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
               ({reviewCount})
             </span>
           </div>
 
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-base font-black" style={{ color: 'var(--color-primary)' }}>
+          {/* Price row */}
+          <div className="flex items-baseline gap-1.5 mb-1">
+            <span className="text-sm font-black" style={{ color: 'var(--color-primary)' }}>
               {formatPrice(product.price)}
             </span>
             {product.compare_price && (
-              <span className="text-xs line-through" style={{ color: 'var(--color-text-muted)' }}>
+              <span className="text-[10px] line-through" style={{ color: 'var(--color-text-muted)' }}>
                 {formatPrice(product.compare_price)}
               </span>
             )}
           </div>
 
-          <div className="text-[10px] font-semibold mt-auto" style={{ color: 'var(--color-success)' }}>
-            🚚 Free Delivery
+          {/* Tags row */}
+          <div className="flex items-center gap-1.5 mt-auto">
+            <span className="text-[10px] font-semibold" style={{ color: 'var(--color-success)' }}>
+              🚚 ফ্রি ডেলিভারি
+            </span>
+            {discount > 0 && (
+              <span className="text-[10px] font-semibold ml-auto" style={{ color: 'var(--color-text-muted)' }}>
+                {soldCount}+ বিক্রি
+              </span>
+            )}
           </div>
         </div>
       </div>
