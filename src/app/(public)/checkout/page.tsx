@@ -130,27 +130,55 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-background)' }}>
       <div className="container-main py-6">
+        {/* Checkout Progress Stepper */}
+        <div className="mb-8 max-w-xl mx-auto">
+          <div className="flex items-center justify-between text-xs font-bold">
+            <div className="flex flex-col items-center text-[var(--color-primary)]">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white mb-1 shadow-sm" style={{ background: 'var(--color-primary)' }}>✓</div>
+              <span>১. কার্ট</span>
+            </div>
+            <div className="flex-1 h-0.5 mx-2" style={{ background: 'var(--color-primary)' }} />
+            <div className="flex flex-col items-center text-[var(--color-primary)]">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white mb-1 shadow-sm ring-4 ring-red-100" style={{ background: 'var(--color-primary)' }}>২</div>
+              <span>২. ঠিকানা</span>
+            </div>
+            <div className="flex-1 h-0.5 mx-2 bg-gray-200" />
+            <div className="flex flex-col items-center text-gray-400">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 mb-1">৩</div>
+              <span>৩. পেমেন্ট</span>
+            </div>
+            <div className="flex-1 h-0.5 mx-2 bg-gray-200" />
+            <div className="flex flex-col items-center text-gray-400">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 mb-1">৪</div>
+              <span>৪. কনফার্ম</span>
+            </div>
+          </div>
+        </div>
+
         <h1 className="text-2xl md:text-3xl font-black mb-6" style={{ color: 'var(--color-text)' }}>
-          Checkout
+          চেকআউট সম্পন্ন করুন (Checkout)
         </h1>
 
         {!user && (
           <div
-            className="mb-6 p-4 rounded-[var(--radius-lg)] border text-sm"
+            className="mb-6 p-4 rounded-[var(--radius-lg)] border text-sm flex items-center justify-between"
             style={{
               background: 'var(--color-primary-light)',
               borderColor: 'var(--color-primary)',
             }}
           >
-            <span style={{ color: 'var(--color-text)' }}>Already have an account? </span>
-            <Link
-              href="/login"
-              className="font-bold hover:underline"
-              style={{ color: 'var(--color-primary)' }}
-            >
-              Login
-            </Link>
-            <span style={{ color: 'var(--color-text-muted)' }}> for faster checkout</span>
+            <div>
+              <span style={{ color: 'var(--color-text)' }}>ইতিমধ্যে অ্যাকাউন্ট আছে? </span>
+              <Link
+                href="/login"
+                className="font-bold hover:underline"
+                style={{ color: 'var(--color-primary)' }}
+              >
+                লগইন করুন
+              </Link>
+              <span style={{ color: 'var(--color-text-muted)' }}> (দ্রুত চেকআউটের জন্য)</span>
+            </div>
+            <span className="text-xs px-2.5 py-1 rounded bg-white font-semibold" style={{ color: 'var(--color-primary)' }}>গেস্ট চেকআউট চালু</span>
           </div>
         )}
 
