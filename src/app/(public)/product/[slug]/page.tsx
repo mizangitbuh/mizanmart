@@ -12,7 +12,6 @@ import { FrequentlyBoughtTogether } from '@/components/shop/FrequentlyBoughtToge
 import { DeliveryEstimator } from '@/components/shop/DeliveryEstimator'
 import { VariantSelector } from '@/components/shop/VariantSelector'
 import { ProductQA } from '@/components/shop/ProductQA'
-import { CustomerPhotoReviews } from '@/components/shop/CustomerPhotoReviews'
 import { FactoryDirectTrust } from '@/components/shop/FactoryDirectTrust'
 import { WholesaleInquiry } from '@/components/shop/WholesaleInquiry'
 import { ProductVideoShowcase } from '@/components/shop/ProductVideoShowcase'
@@ -287,8 +286,10 @@ export default async function ProductPage({ params }: Props) {
               </div>
             )}
 
-            {/* Variant Selector — Color & Size */}
-            <VariantSelector />
+            {/* Variant Selector — Only for clothing items with real sizes */}
+            {categoryData?.slug === 'clothing' && (
+              <VariantSelector />
+            )}
 
             {/* Wholesale / Bulk Order Query for Importers */}
             <WholesaleInquiry
@@ -360,11 +361,6 @@ export default async function ProductPage({ params }: Props) {
             isLoggedIn={isLoggedIn}
             userReviewStatus={userReviewStatus}
           />
-        </div>
-
-        {/* Customer Photo Reviews */}
-        <div className="mt-10">
-          <CustomerPhotoReviews productName={product.name} seed={product.slug} />
         </div>
 
         {/* Customer Questions & Answers */}

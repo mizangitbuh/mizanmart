@@ -9,32 +9,32 @@ import { SmartSearch } from '@/components/shop/SmartSearch'
 // ক্যাটাগরি ডেটা
 const MEGA_MENU_DATA = [
   {
-    name: 'Cosmetics',
-    nameBn: 'কসমেটিক্স',
-    slug: 'cosmetics',
-    icon: '💄',
-    sub: ['Lipstick', 'Foundation', 'Skincare', 'Perfume', 'Eyeshadow', 'Mascara'],
-  },
-  {
-    name: 'Clothing',
-    nameBn: 'পোশাক',
-    slug: 'clothing',
-    icon: '👕',
-    sub: ['Men\'s Wear', 'Women\'s Wear', 'Kids\' Wear', 'Saree', 'Panjabi', 'Winter Wear'],
-  },
-  {
     name: 'Electronics',
-    nameBn: 'ইলেকট্রনিক্স',
+    nameBn: 'ইলেকট্রনিক্স ও গ্যাজেট',
     slug: 'electronics',
     icon: '📱',
-    sub: ['Mobile', 'Laptop', 'Headphones', 'Charger', 'Smart Watch', 'Camera'],
+    sub: ['হেডফোন ও ইয়ারবাডস', 'স্মার্ট ওয়াচ', 'ফাস্ট চার্জার ও কেবল', 'পাওয়ার ব্যাংক', 'ব্লুটুথ স্পিকার', 'মোবাইল এক্সেসরিজ'],
   },
   {
     name: 'General',
-    nameBn: 'জেনারেল',
+    nameBn: 'স্মার্ট হোম ও টুলস',
     slug: 'general',
     icon: '🛒',
-    sub: ['Home & Living', 'Kitchen', 'Sports', 'Books', 'Toys', 'Stationery'],
+    sub: ['হোম অ্যাপ্লায়েন্স', 'স্মার্ট কিচেন টুলস', 'লাইফস্টাইল গ্যাজেট', 'কার এক্সেসরিজ', 'টর্চ ও লাইটিং', 'দৈনন্দিন টুলস'],
+  },
+  {
+    name: 'Clothing',
+    nameBn: 'পোশাক ও ফ্যাশন',
+    slug: 'clothing',
+    icon: '👕',
+    sub: ['টি-শার্ট ও পোলো', 'জ্যাকেট ও হুডি', 'উইন্টার কালেকশন', 'ক্যাজুয়াল ওয়্যার', 'ফ্যাশন এক্সেসরিজ'],
+  },
+  {
+    name: 'Cosmetics',
+    nameBn: 'বিউটি ও কেয়ার',
+    slug: 'cosmetics',
+    icon: '💄',
+    sub: ['স্কিনকেয়ার টুলস', 'ফেসিয়াল ম্যাসাজার', 'হেয়ার ড্রায়ার ও ট্রিমার', 'পার্সোনাল কেয়ার'],
   },
 ]
 

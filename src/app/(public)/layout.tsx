@@ -1,7 +1,6 @@
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav'
-import { LiveSalesPopup } from '@/components/home/LiveSalesPopup'
 import { FloatingSupportWidget } from '@/components/home/FloatingSupportWidget'
 import { CartDrawer } from '@/components/shop/CartDrawer'
 
@@ -12,8 +11,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
       <Footer />
       <MobileBottomNav />
-      {/* Global overlays — social proof, support & cart drawer */}
-      <LiveSalesPopup />
+      {/* Global overlays — support & cart drawer */}
       <FloatingSupportWidget />
       <CartDrawer />
     </div>

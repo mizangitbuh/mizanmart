@@ -33,7 +33,7 @@ const CATEGORIES = [
   { name: 'জেনারেল', slug: 'general' },
 ]
 
-const POPULAR_SEARCHES = ['Lipstick', 'Panjabi', 'Smart Watch', 'Foundation', 'Headphones', 'Saree']
+const POPULAR_SEARCHES = ['স্মার্ট গ্যাজেট', 'ইয়ারবাডস', 'স্মার্ট ওয়াচ', 'চার্জার', 'নতুন কালেকশন', 'অফার']
 const RECENT_KEY = 'mizanmart_recent_searches'
 
 export function SmartSearch({ placeholder = 'পণ্য, ব্র্যান্ড খুঁজুন...', compact = false }: Props) {
