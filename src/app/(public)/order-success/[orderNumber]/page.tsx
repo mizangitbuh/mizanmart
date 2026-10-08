@@ -20,7 +20,7 @@ export default async function OrderSuccessPage({ params }: Props) {
             Order Confirmed! 🎉
           </h1>
           <p className="text-[var(--color-text-muted)]">
-            Thank you for shopping with mizanmart
+            Thank you for shopping with martivo
           </p>
         </div>
 

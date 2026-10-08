@@ -48,7 +48,7 @@ export function FactoryDirectTrust() {
           </div>
           <div>
             <h3 className="font-black text-sm text-[var(--color-text)] flex items-center gap-1.5">
-              MizanMart অফিসিয়াল ইমপোর্টার গ্যারান্টি
+              Martivo অফিসিয়াল ইমপোর্টার গ্যারান্টি
               <Sparkles size={14} className="text-amber-500" />
             </h3>
             <p className="text-[11px] text-[var(--color-text-muted)]">

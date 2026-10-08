@@ -45,9 +45,9 @@ export interface StoreSettings {
 
 export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   id: 'default',
-  store_name: 'MizanMart',
+  store_name: 'Martivo',
   store_tagline: 'Your trusted online shopping destination',
-  support_email: 'support@mizanmart.com',
+  support_email: 'jobmizanew@gmail.com',
   support_phone: '+8801700000000',
   support_whatsapp: '+8801700000000',
   store_address: 'Dhaka, Bangladesh',

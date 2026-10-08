@@ -14,7 +14,7 @@ export function WholesaleInquiry({ productName, productPrice, sku }: Props) {
   const whatsappNumber = '8801700000000' // Default store WhatsApp
   
   const inquiryMessage = encodeURIComponent(
-    `আসসালামু আলাইকুম, আমি MizanMart থেকে "${productName}" (SKU: ${sku || 'N/A'}) পণ্যটি পাইকারি / বাল্ক অর্ডারে (৫+ পিস) নিতে আগ্রহী। অনুগ্রহ করে হোলসেল রেট এবং মিনিমাম কোয়ান্টিটি জানাবেন।`
+    `আসসালামু আলাইকুম, আমি Martivo থেকে "${productName}" (SKU: ${sku || 'N/A'}) পণ্যটি পাইকারি / বাল্ক অর্ডারে (৫+ পিস) নিতে আগ্রহী। অনুগ্রহ করে হোলসেল রেট এবং মিনিমাম কোয়ান্টিটি জানাবেন।`
   )
 
   const handleCopy = () => {

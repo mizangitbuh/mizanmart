@@ -55,7 +55,7 @@ export function BrandShowcase() {
             <span className="text-xl">🇨🇳</span>
             <div>
               <h2 className="text-base sm:text-lg font-black flex items-center gap-1.5" style={{ color: 'var(--color-text)' }}>
-                MizanMart ডিরেক্ট ফ্যাক্টরি নিশ্চয়তা
+                Martivo ডিরেক্ট ফ্যাক্টরি নিশ্চয়তা
                 <Sparkles size={15} className="text-amber-500" />
               </h2>
               <p className="text-xs text-[var(--color-text-muted)]">

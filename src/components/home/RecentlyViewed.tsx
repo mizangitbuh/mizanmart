@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { Clock, ArrowRight } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 
-const VIEWED_KEY = 'mizanmart_recently_viewed'
+const VIEWED_KEY = 'martivo_recently_viewed'
 const MAX_VIEWED = 10
 
 interface ViewedProduct {

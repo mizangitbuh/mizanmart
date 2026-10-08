@@ -348,7 +348,7 @@ export function Navbar() {
             >
               {/* Drawer Header */}
               <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--color-border)', background: 'var(--color-primary)' }}>
-                <span className="text-white font-black text-lg">MizanMart মেনু</span>
+                <span className="text-white font-black text-lg">Martivo মেনু</span>
                 <button onClick={() => setMobileMenuOpen(false)} className="text-white p-1">
                   <X size={20} />
                 </button>

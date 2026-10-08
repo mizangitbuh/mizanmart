@@ -62,7 +62,7 @@ const DEFAULT_SLIDES = [
     id: 'default-4',
     title: '📱 টেক পণ্যে সেরা অফার',
     subtitle: 'Electronics Sale',
-    description: 'স্মার্টফোন, হেডফোন, গ্যাজেট — সেরা দামে পাচ্ছেন MizanMart-এ',
+    description: 'স্মার্টফোন, হেডফোন, গ্যাজেট — সেরা দামে পাচ্ছেন Martivo-এ',
     cta_text: 'ইলেকট্রনিক্স দেখুন',
     cta_url: '/products?category=electronics',
     bg: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)',

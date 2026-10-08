@@ -7,7 +7,7 @@ import { UserCheck } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Admin Profile | MizanMart',
+  title: 'Admin Profile | Martivo',
 }
 
 export default async function AdminProfilePage() {

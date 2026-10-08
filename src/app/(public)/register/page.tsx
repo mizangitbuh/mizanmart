@@ -47,7 +47,7 @@ export default function RegisterPage() {
               </span>
             </Link>
             <h1 className="text-2xl font-black text-[var(--color-text)]">Create Account</h1>
-            <p className="text-sm text-[var(--color-text-muted)] mt-1">Join mizanmart today</p>
+            <p className="text-sm text-[var(--color-text-muted)] mt-1">Join martivo today</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">

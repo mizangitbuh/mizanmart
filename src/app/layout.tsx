@@ -17,11 +17,11 @@ const notoBengali = Noto_Sans_Bengali({
 })
 
 export const metadata: Metadata = {
-  title: 'MizanMart — বাংলাদেশের সেরা অনলাইন শপ',
+  title: 'Martivo — বাংলাদেশের সেরা অনলাইন শপ',
   description: 'Cosmetics, Clothing, Electronics, General — Quality products. Better prices. Easy delivery.',
   keywords: ['online shop', 'bangladesh', 'ecommerce', 'cosmetics', 'clothing', 'electronics'],
   openGraph: {
-    title: 'MizanMart — বাংলাদেশের সেরা অনলাইন শপ',
+    title: 'Martivo — বাংলাদেশের সেরা অনলাইন শপ',
     description: 'Quality products. Better prices. Easy delivery.',
     type: 'website',
   },

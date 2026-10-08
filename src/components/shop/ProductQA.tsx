@@ -19,8 +19,8 @@ const DEFAULT_QA: QAItem[] = [
     question: 'পণ্যটি কি ১০০% অরিজিনাল এবং ইনট্যাক্ট প্যাকেট?',
     asker: 'তানভীর আহমেদ',
     date: '২ দিন আগে',
-    answer: 'জি, MizanMart-এর প্রতিটি পণ্য ১০০% অরিজিনাল এবং ব্র্যান্ডের ইনট্যাক্ট সিল করা প্যাকেট সহ সরবরাহ করা হয়।',
-    answeredBy: 'MizanMart Official Support',
+    answer: 'জি, Martivo-এর প্রতিটি পণ্য ১০০% অরিজিনাল এবং ব্র্যান্ডের ইনট্যাক্ট সিল করা প্যাকেট সহ সরবরাহ করা হয়।',
+    answeredBy: 'Martivo Official Support',
     votes: 18,
   },
   {
@@ -29,7 +29,7 @@ const DEFAULT_QA: QAItem[] = [
     asker: 'রাকিবুল হাসান',
     date: '১ সপ্তাহ আগে',
     answer: 'অবশ্যই! আমাদের ডেলিভারি ম্যানের সামনে প্যাকেট চেক করে ক্যাশ অন ডেলিভারি (COD) পেমেন্ট করতে পারবেন।',
-    answeredBy: 'MizanMart Official Support',
+    answeredBy: 'Martivo Official Support',
     votes: 24,
   },
   {
@@ -38,7 +38,7 @@ const DEFAULT_QA: QAItem[] = [
     asker: 'মাহমুদুল হক',
     date: '৩ দিন আগে',
     answer: 'জি, ডেলিভারি পাওয়ার পর পণ্যটিতে কোনো সমস্যা থাকলে ৭ দিনের মধ্যে আমাদের সেন্ট্রাল ওয়্যারহাউস থেকে সম্পূর্ণ ফ্রি রিপ্লেসমেন্ট পাবেন।',
-    answeredBy: 'MizanMart Official Support',
+    answeredBy: 'Martivo Official Support',
     votes: 19,
   },
 ]
@@ -59,7 +59,7 @@ export function ProductQA({ productName }: { productName: string }) {
       asker: 'আপনি (ইউজার)',
       date: 'এইমাত্র',
       answer: 'আপনার প্রশ্নটি গৃহীত হয়েছে। আমাদের সাপোর্ট টিম খুব শীঘ্রই উত্তর প্রদান করবে।',
-      answeredBy: 'MizanMart Support (অপেক্ষমাণ)',
+      answeredBy: 'Martivo Support (অপেক্ষমাণ)',
       votes: 1,
     }
 

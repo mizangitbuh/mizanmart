@@ -252,7 +252,7 @@ export default async function ProductPage({ params }: Props) {
               {/* SKU & Brand */}
               <div className="flex items-center gap-3 text-xs mt-1.5" style={{ color: 'var(--color-text-muted)' }}>
                 {product.sku && <span>SKU: <span className="font-mono">{product.sku}</span></span>}
-                <span>ব্র্যান্ড: <strong className="text-[var(--color-text)]">MizanMart Authentics</strong></span>
+                <span>ব্র্যান্ড: <strong className="text-[var(--color-text)]">Martivo Authentics</strong></span>
               </div>
             </div>
 

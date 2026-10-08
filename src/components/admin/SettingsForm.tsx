@@ -136,7 +136,7 @@ export function SettingsForm({ initialSettings }: Props) {
               <Input
                 value={settings.store_name}
                 onChange={(e) => handleChange('store_name', e.target.value)}
-                placeholder="MizanMart"
+                placeholder="Martivo"
                 required
               />
             </div>
@@ -193,7 +193,7 @@ export function SettingsForm({ initialSettings }: Props) {
                 type="email"
                 value={settings.support_email}
                 onChange={(e) => handleChange('support_email', e.target.value)}
-                placeholder="support@mizanmart.com"
+                placeholder="jobmizanew@gmail.com"
               />
             </div>
 
@@ -610,7 +610,7 @@ export function SettingsForm({ initialSettings }: Props) {
               <Input
                 value={settings.facebook_url}
                 onChange={(e) => handleChange('facebook_url', e.target.value)}
-                placeholder="https://facebook.com/mizanmart"
+                placeholder="https://facebook.com/martivo"
               />
             </div>
 
@@ -621,7 +621,7 @@ export function SettingsForm({ initialSettings }: Props) {
               <Input
                 value={settings.instagram_url}
                 onChange={(e) => handleChange('instagram_url', e.target.value)}
-                placeholder="https://instagram.com/mizanmart"
+                placeholder="https://instagram.com/martivo"
               />
             </div>
 
@@ -632,7 +632,7 @@ export function SettingsForm({ initialSettings }: Props) {
               <Input
                 value={settings.youtube_url}
                 onChange={(e) => handleChange('youtube_url', e.target.value)}
-                placeholder="https://youtube.com/@mizanmart"
+                placeholder="https://youtube.com/@martivo"
               />
             </div>
           </div>

@@ -40,7 +40,7 @@ export function WhyMizanMart() {
             WHY MIZANMART
           </div>
           <h2 className="text-2xl md:text-3xl font-black mb-2" style={{ color: 'var(--color-text)' }}>
-            কেন MizanMart?
+            কেন Martivo?
           </h2>
           <p className="text-sm max-w-xl mx-auto" style={{ color: 'var(--color-text-muted)' }}>
             হাজারো গ্রাহক আমাদের উপর ভরসা রাখেন — কারণ আমরা শুধু পণ্য বিক্রি করি না, সম্পর্ক তৈরি করি।

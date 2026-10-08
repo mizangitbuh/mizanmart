@@ -147,7 +147,7 @@ export function BuyBox({ product, sizes = [] }: Props) {
       <div className="mb-4 p-2.5 rounded-lg bg-amber-50 border border-amber-200/80 flex items-center gap-2.5 text-xs">
         <span className="text-base flex-shrink-0">🪙</span>
         <div>
-          <span className="font-bold text-amber-900">MizanMart ক্যাশব্যাক রিওয়ার্ড:</span>
+          <span className="font-bold text-amber-900">Martivo ক্যাশব্যাক রিওয়ার্ড:</span>
           <span className="text-amber-800 ml-1">
             এই অর্ডারে পাবেন <strong className="font-black text-amber-950">{Math.max(10, Math.round(product.price * 0.02))} পয়েন্ট</strong>
           </span>
@@ -256,7 +256,7 @@ export function BuyBox({ product, sizes = [] }: Props) {
           <ShieldCheck size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--color-primary)' }} />
           <div>
             <div className="font-bold text-[var(--color-text)]">১০০% আসল পণ্যের গ্যারান্টি:</div>
-            <div>MizanMart ভেরিফাইড কোয়ালিটি</div>
+            <div>Martivo ভেরিফাইড কোয়ালিটি</div>
           </div>
         </div>
       </div>

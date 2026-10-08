@@ -21,7 +21,7 @@ export function FloatingSupportWidget() {
               </div>
               <div>
                 <div className="font-bold text-xs" style={{ color: 'var(--color-text)' }}>
-                  MizanMart কাস্টমার সাপোর্ট
+                  Martivo কাস্টমার সাপোর্ট
                 </div>
                 <div className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -41,7 +41,7 @@ export function FloatingSupportWidget() {
           <div className="space-y-2 text-xs">
             {/* WhatsApp Link */}
             <a
-              href="https://wa.me/8801871418973?text=Hello%20MizanMart%20Support,%20I%20need%20help%20with%20an%20order"
+              href="https://wa.me/8801871418973?text=Hello%20Martivo%20Support,%20I%20need%20help%20with%20an%20order"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2.5 p-2.5 rounded-[var(--radius-md)] bg-emerald-600 text-white font-bold transition-transform hover:scale-[1.02] shadow-sm"

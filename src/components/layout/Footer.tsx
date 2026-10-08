@@ -52,7 +52,7 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2 text-xs text-gray-400">
                 <Mail size={13} style={{ color: 'var(--color-primary)' }} />
-                <span>support@mizanmart.com</span>
+                <span>jobmizanew@gmail.com</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-gray-400">
                 <MapPin size={13} style={{ color: 'var(--color-primary)' }} />
@@ -171,7 +171,7 @@ export function Footer() {
           className="mt-8 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-gray-500"
           style={{ borderTop: '1px solid #333' }}
         >
-          <div>© {new Date().getFullYear()} MizanMart. সর্বস্বত্ব সংরক্ষিত।</div>
+          <div>© {new Date().getFullYear()} Martivo. সর্বস্বত্ব সংরক্ষিত।</div>
           <div className="flex gap-4">
             <Link href="#" className="hover:text-white transition-colors">প্রাইভেসি পলিসি</Link>
             <Link href="#" className="hover:text-white transition-colors">শর্তাবলী</Link>

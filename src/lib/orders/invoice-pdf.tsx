@@ -334,9 +334,9 @@ export function InvoiceDocument({ order, productImages = {}, qrDataUrl }: Props)
           </View>
           <View style={styles.contactBlock}>
             <Text style={styles.contactLine}>
-              <Text style={styles.contactBold}>www.mizanmart.com</Text>
+              <Text style={styles.contactBold}>www.martivo.com</Text>
             </Text>
-            <Text style={styles.contactLine}>support@mizanmart.com</Text>
+            <Text style={styles.contactLine}>jobmizanew@gmail.com</Text>
             <Text style={styles.contactLine}>+880 1700 000000</Text>
             <Text style={styles.contactLine}>Dhaka, Bangladesh</Text>
           </View>
@@ -346,7 +346,7 @@ export function InvoiceDocument({ order, productImages = {}, qrDataUrl }: Props)
         <View style={styles.titleRow}>
           <View style={{ flex: 1 }}>
             <Text style={styles.invoiceLabel}>INVOICE</Text>
-            <Text style={styles.invoiceSubtext}>Thank you for shopping with MizanMart!</Text>
+            <Text style={styles.invoiceSubtext}>Thank you for shopping with Martivo!</Text>
             <Text style={styles.invoiceSubtext}>Here is your order summary and payment details.</Text>
           </View>
           <View style={styles.metaBox}>
@@ -544,7 +544,7 @@ export function InvoiceDocument({ order, productImages = {}, qrDataUrl }: Props)
           </View>
           <View style={styles.thankYou}>
             <Text style={styles.thankyouLabel}>Thank You!</Text>
-            <Text style={styles.thankyouName}>MizanMart Team</Text>
+            <Text style={styles.thankyouName}>Martivo Team</Text>
           </View>
         </View>
       </Page>
