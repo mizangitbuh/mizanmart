@@ -21,6 +21,7 @@ import {
   Star,
   Activity,
 } from 'lucide-react'
+import { Logo } from '@/components/shared/Logo'
 
 interface Props {
   isOpen: boolean
@@ -101,20 +102,7 @@ export function AdminSidebar({ isOpen, onClose }: Props) {
           style={{ borderColor: 'var(--color-border)' }}
         >
           <Link href="/admin" className="flex items-center gap-2">
-            <div
-              className="w-7 h-7 rounded flex items-center justify-center text-white font-black text-xs"
-              style={{ background: 'var(--color-primary)' }}
-            >
-              M
-            </div>
-            <div>
-              <div className="font-black text-sm leading-tight" style={{ color: 'var(--color-text)' }}>
-                MizanMart
-              </div>
-              <div className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'var(--color-primary)' }}>
-                Seller Central
-              </div>
-            </div>
+            <Logo href={null} variant="full" height={30} />
           </Link>
 
           <button

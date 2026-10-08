@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import { ShoppingCart, User, Heart, Menu, X, Phone, ChevronDown, ChevronRight, Grid3X3, Tag } from 'lucide-react'
 import { useCartStore } from '@/stores/cart'
 import { SmartSearch } from '@/components/shop/SmartSearch'
+import { Logo } from '@/components/shared/Logo'
 
 // ক্যাটাগরি ডেটা
 const MEGA_MENU_DATA = [
@@ -137,9 +138,7 @@ export function Navbar() {
 
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
-              <span className="text-xl md:text-2xl font-black tracking-tight" style={{ color: 'var(--color-primary)' }}>
-                mizan<span style={{ color: 'var(--color-text)' }}>mart</span>
-              </span>
+              <Logo href={null} variant="full" height={38} />
             </Link>
 
             {/* Desktop: All Categories button + Mega Menu */}
