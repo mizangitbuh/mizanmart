@@ -138,7 +138,7 @@ export function Navbar() {
 
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
-              <Logo href={null} variant="full" height={38} />
+              <Logo href={null} variant="inline" height={44} />
             </Link>
 
             {/* Desktop: All Categories button + Mega Menu */}

@@ -2,82 +2,94 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 interface Props {
-  /** 'full' = icon + stacked text (navbar); 'compact' = smaller; 'icon' = icon only */
-  variant?: 'full' | 'compact' | 'icon'
-  /** Link wrapper. Pass null inside existing <Link> to avoid double <a> */
+  variant?: 'stacked' | 'inline' | 'icon'
   href?: string | null
-  /** Height of the icon in px. Text scales proportionally */
-  height?: number
-  /** Brand name — change this when shop name changes */
-  brandName?: string
-  /** Text color scheme: split = "Mizan" navy + "Mart" red (default) */
   className?: string
+  height?: number
 }
 
+const BRAND_PINK = '#D6336C'
+
 export function Logo({
-  variant = 'full',
+  variant = 'stacked',
   href = '/',
-  height,
-  brandName = 'MizanMart',
   className = '',
+  height,
 }: Props) {
-  // Split brand name into two parts for two-tone coloring
-  // e.g., "MizanMart" → ["Mizan", "Mart"]
-  // For any name, split in half
-  const mid = Math.ceil(brandName.length / 2)
-  const part1 = brandName.slice(0, mid)
-  const part2 = brandName.slice(mid)
-
-  // Icon size scales with variant
-  const iconSize = height ?? (variant === 'compact' ? 32 : 42)
-  const textSize =
-    variant === 'compact'
-      ? Math.max(9, Math.round(iconSize * 0.34))
-      : Math.max(10, Math.round(iconSize * 0.38))
-
-  const content =
-    variant === 'icon' ? (
+  // Icon-only variant — for tight spaces (invoice, etc.)
+  if (variant === 'icon') {
+    const h = height ?? 40
+    const content = (
       <Image
         src="/brand/logo-icon.png"
-        alt={brandName}
-        width={iconSize}
-        height={iconSize}
+        alt="Martivo"
+        width={Math.round(h * 0.88)}
+        height={h}
         priority
-        style={{ width: iconSize, height: iconSize, objectFit: 'contain' }}
+        style={{ height: h, width: 'auto', objectFit: 'contain' }}
       />
-    ) : (
-      <div
-        className={`inline-flex flex-col items-center ${className}`}
-        style={{ lineHeight: 1 }}
-      >
+    )
+    if (href === null) return content
+    return <Link href={href} className="inline-flex items-center">{content}</Link>
+  }
+
+  // Inline variant — icon + text side by side (for wide navbar)
+  if (variant === 'inline') {
+    const h = height ?? 42
+    const content = (
+      <div className={`inline-flex items-center gap-2.5 ${className}`}>
         <Image
           src="/brand/logo-icon.png"
-          alt={brandName}
-          width={iconSize}
-          height={iconSize}
+          alt="Martivo"
+          width={Math.round(h * 0.88)}
+          height={h}
           priority
-          style={{
-            width: iconSize,
-            height: iconSize,
-            objectFit: 'contain',
-            display: 'block',
-          }}
+          style={{ height: h, width: 'auto', objectFit: 'contain' }}
         />
         <span
-          className="font-black tracking-tight whitespace-nowrap mt-0.5"
-          style={{ fontSize: textSize, letterSpacing: '-0.02em' }}
+          className="font-black tracking-tight leading-none"
+          style={{
+            fontSize: h * 0.68,
+            fontFamily: 'var(--font-inter), system-ui, sans-serif',
+            letterSpacing: '-0.02em',
+          }}
         >
-          <span style={{ color: '#1D3557' }}>{part1}</span>
-          <span style={{ color: '#E63946' }}>{part2}</span>
+          <span style={{ color: BRAND_PINK }}>M</span>
+          <span style={{ color: 'var(--color-text)' }}>artivo</span>
         </span>
       </div>
     )
+    if (href === null) return content
+    return <Link href={href} className="inline-flex items-center">{content}</Link>
+  }
+
+  // Default: stacked variant — icon top, text below (centered)
+  const iconH = height ?? 44
+  const textSize = iconH * 0.62
+  const content = (
+    <div className={`inline-flex flex-col items-center ${className}`}>
+      <Image
+        src="/brand/logo-icon.png"
+        alt="Martivo"
+        width={Math.round(iconH * 0.88)}
+        height={iconH}
+        priority
+        style={{ height: iconH, width: 'auto', objectFit: 'contain' }}
+      />
+      <span
+        className="font-black tracking-tight leading-none mt-1"
+        style={{
+          fontSize: textSize,
+          fontFamily: 'var(--font-inter), system-ui, sans-serif',
+          letterSpacing: '-0.03em',
+        }}
+      >
+        <span style={{ color: BRAND_PINK }}>M</span>
+        <span style={{ color: 'var(--color-text)' }}>artivo</span>
+      </span>
+    </div>
+  )
 
   if (href === null) return content
-
-  return (
-    <Link href={href} className="inline-flex items-center">
-      {content}
-    </Link>
-  )
+  return <Link href={href} className="inline-flex items-center">{content}</Link>
 }

@@ -102,7 +102,7 @@ export function AdminSidebar({ isOpen, onClose }: Props) {
           style={{ borderColor: 'var(--color-border)' }}
         >
           <Link href="/admin" className="flex items-center gap-2">
-            <Logo href={null} variant="full" height={30} />
+            <Logo href={null} variant="inline" height={36} />
           </Link>
 
           <button
