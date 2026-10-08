@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Share2, MessageCircle, Send } from 'lucide-react'
+import { Logo } from '@/components/shared/Logo'
 
 const shopLinks = [
   { name: 'সব পণ্য', href: '/products' },
@@ -37,9 +38,14 @@ export function Footer() {
 
           {/* Col 1: Brand + Contact */}
           <div>
-            <Link href="/" className="inline-block mb-4">
-              <span className="text-2xl font-black" style={{ color: 'var(--color-primary)' }}>
-                mizan<span className="text-white">mart</span>
+            <Link href="/" className="inline-flex items-center gap-2.5 mb-4">
+              <Logo href={null} variant="icon" height={36} />
+              <span
+                className="text-2xl font-black tracking-tight leading-none"
+                style={{ fontFamily: 'var(--font-inter), system-ui, sans-serif', letterSpacing: '-0.03em' }}
+              >
+                <span style={{ color: '#D6336C' }}>M</span>
+                <span style={{ color: 'white' }}>artivo</span>
               </span>
             </Link>
             <p className="text-xs text-gray-400 mb-4 leading-relaxed">

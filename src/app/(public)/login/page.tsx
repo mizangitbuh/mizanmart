@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Mail, Lock, LogIn } from 'lucide-react'
+import { Logo } from '@/components/shared/Logo'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -35,11 +36,9 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg border border-[var(--color-border)] p-8">
           <div className="text-center mb-8">
-            <Link href="/" className="inline-block mb-4">
-              <span className="text-3xl font-black" style={{ color: 'var(--color-primary)' }}>
-                mizan<span style={{ color: 'var(--color-text)' }}>mart</span>
-              </span>
-            </Link>
+            <div className="flex justify-center mb-4">
+              <Logo href="/" variant="stacked" height={48} />
+            </div>
             <h1 className="text-2xl font-black text-[var(--color-text)]">Welcome Back</h1>
             <p className="text-sm text-[var(--color-text-muted)] mt-1">Login to your account</p>
           </div>
