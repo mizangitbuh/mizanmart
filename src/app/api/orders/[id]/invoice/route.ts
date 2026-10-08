@@ -1,10 +1,22 @@
 import { NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
+import QRCode from 'qrcode'
 import { createClient } from '@/lib/supabase/server'
 import { InvoiceDocument } from '@/lib/orders/invoice-pdf'
 
+function getBaseUrl(request: Request): string {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL
+  if (envUrl) return envUrl.replace(/\/$/, '')
+
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host')
+  const proto = request.headers.get('x-forwarded-proto') || 'http'
+  if (host) return `${proto}://${host}`
+
+  return 'http://localhost:3000'
+}
+
 export async function GET(
-  _req: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
@@ -15,8 +27,6 @@ export async function GET(
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   }
 
-  // RLS enforces ownership — customer sees only own orders,
-  // admin sees all (via "Admin read all orders" policy)
   const { data: order, error } = await supabase
     .from('orders')
     .select('*, order_items(*)')
@@ -28,8 +38,42 @@ export async function GET(
   }
 
   try {
+    const productIds = [
+      ...new Set(
+        (order.order_items || [])
+          .map((it: any) => it.product_id)
+          .filter(Boolean)
+      ),
+    ]
+
+    const productImages: Record<string, string | null> = {}
+
+    if (productIds.length > 0) {
+      const { data: products } = await supabase
+        .from('products')
+        .select('id, images')
+        .in('id', productIds)
+
+      for (const p of products || []) {
+        const imgs = Array.isArray(p.images) ? p.images : []
+        const first = imgs.find((url: any) => typeof url === 'string' && url.trim())
+        productImages[p.id] = first || null
+      }
+    }
+
+    const baseUrl = getBaseUrl(request)
+    const trackingUrl = `${baseUrl}/order-success/${order.order_number}`
+    const qrDataUrl = await QRCode.toDataURL(trackingUrl, {
+      width: 200,
+      margin: 1,
+      color: {
+        dark: '#991b1b',
+        light: '#ffffff',
+      },
+    })
+
     const buffer = await renderToBuffer(
-      InvoiceDocument({ order }) as any
+      InvoiceDocument({ order, productImages, qrDataUrl }) as any
     )
 
     const filename = `invoice-${order.order_number}.pdf`
