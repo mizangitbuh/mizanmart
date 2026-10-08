@@ -141,6 +141,17 @@ export default async function ProductPage({ params }: Props) {
     }
   }
 
+  // ─── Parse available sizes metadata from description ───
+  let cleanDescription = product.description || ''
+  let productSizes: string[] = []
+  if (product.description) {
+    const sizeMatch = product.description.match(/\[SIZES:\s*([^\]]+)\]/i)
+    if (sizeMatch) {
+      productSizes = sizeMatch[1].split(',').map((s: string) => s.trim()).filter(Boolean)
+      cleanDescription = product.description.replace(/\[SIZES:\s*([^\]]+)\]/gi, '').trim()
+    }
+  }
+
   // Sample high-conversion bullet points for Amazon-like density
   const highlights = [
     '১০০% আসল ও প্রিমিয়াম কোয়ালিটি নিশ্চিত',
@@ -280,15 +291,15 @@ export default async function ProductPage({ params }: Props) {
             </div>
 
             {/* Short description preview */}
-            {product.description && (
+            {cleanDescription && (
               <div className="text-xs leading-relaxed line-clamp-4" style={{ color: 'var(--color-text-secondary)' }}>
-                {product.description}
+                {cleanDescription}
               </div>
             )}
 
-            {/* Variant Selector — Only for clothing items with real sizes */}
-            {categoryData?.slug === 'clothing' && (
-              <VariantSelector />
+            {/* Variant Selector — Only if sizes exist for this product */}
+            {productSizes.length > 0 && (
+              <VariantSelector sizes={productSizes} />
             )}
 
             {/* Wholesale / Bulk Order Query for Importers */}
@@ -311,6 +322,7 @@ export default async function ProductPage({ params }: Props) {
                 image: images[0],
                 stock_quantity: product.stock_quantity,
               }}
+              sizes={productSizes}
             />
             {/* Delivery Estimator — below BuyBox */}
             <DeliveryEstimator price={Number(product.price)} />
@@ -351,7 +363,7 @@ export default async function ProductPage({ params }: Props) {
         <div id="reviews-section" className="mt-10">
           <ProductDetailTabs
             productId={product.id}
-            description={product.description}
+            description={cleanDescription}
             sku={product.sku}
             category={categoryData?.name || null}
             rating={stats.average}

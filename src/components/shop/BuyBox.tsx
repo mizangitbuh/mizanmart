@@ -17,12 +17,14 @@ interface Props {
     image: string
     stock_quantity?: number
   }
+  sizes?: string[]
 }
 
-export function BuyBox({ product }: Props) {
+export function BuyBox({ product, sizes = [] }: Props) {
   const router = useRouter()
   const addItem = useCartStore((s) => s.addItem)
   const [quantity, setQuantity] = useState(1)
+  const [selectedSize, setSelectedSize] = useState(sizes.length > 0 ? sizes[0] : '')
   const [added, setAdded] = useState(false)
   const [wishlisted, setWishlisted] = useState(false)
 
@@ -35,10 +37,11 @@ export function BuyBox({ product }: Props) {
 
   const handleAdd = () => {
     if (!inStock) return
+    const itemName = selectedSize ? `${product.name} (${selectedSize})` : product.name
     for (let i = 0; i < quantity; i++) {
       addItem({
         productId: product.id,
-        name: product.name,
+        name: itemName,
         slug: product.slug,
         price: product.price,
         image: product.image,
@@ -50,10 +53,11 @@ export function BuyBox({ product }: Props) {
 
   const handleBuyNow = () => {
     if (!inStock) return
+    const itemName = selectedSize ? `${product.name} (${selectedSize})` : product.name
     for (let i = 0; i < quantity; i++) {
       addItem({
         productId: product.id,
-        name: product.name,
+        name: itemName,
         slug: product.slug,
         price: product.price,
         image: product.image,
@@ -153,6 +157,40 @@ export function BuyBox({ product }: Props) {
       {/* Quantity & CTA */}
       {inStock && (
         <div className="space-y-3 mb-5">
+          {/* Size Selector in BuyBox */}
+          {sizes && sizes.length > 0 && (
+            <div className="space-y-1.5 pb-2 border-b" style={{ borderColor: 'var(--color-border)' }}>
+              <div className="flex items-center justify-between text-xs">
+                <label className="font-bold text-[var(--color-text)]">
+                  সাইজ (Size):
+                </label>
+                <span className="font-black text-[var(--color-primary)]">
+                  {selectedSize}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {sizes.map((s) => {
+                  const isSel = selectedSize === s
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setSelectedSize(s)}
+                      className="px-2.5 py-1 rounded-md text-xs font-bold border transition-all active:scale-95"
+                      style={{
+                        background: isSel ? 'var(--color-primary)' : 'var(--color-surface)',
+                        color: isSel ? 'white' : 'var(--color-text)',
+                        borderColor: isSel ? 'var(--color-primary)' : 'var(--color-border)',
+                      }}
+                    >
+                      {s}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold" style={{ color: 'var(--color-text)' }}>
               পরিমাণ (Quantity):
