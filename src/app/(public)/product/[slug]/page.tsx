@@ -13,6 +13,11 @@ import { DeliveryEstimator } from '@/components/shop/DeliveryEstimator'
 import { VariantSelector } from '@/components/shop/VariantSelector'
 import { ProductQA } from '@/components/shop/ProductQA'
 import { CustomerPhotoReviews } from '@/components/shop/CustomerPhotoReviews'
+import { FactoryDirectTrust } from '@/components/shop/FactoryDirectTrust'
+import { WholesaleInquiry } from '@/components/shop/WholesaleInquiry'
+import { ProductVideoShowcase } from '@/components/shop/ProductVideoShowcase'
+import { StickyBottomBuyBar } from '@/components/shop/StickyBottomBuyBar'
+import { ProductCompareTable } from '@/components/shop/ProductCompareTable'
 import { Check, ShieldCheck, Truck, RotateCcw, Share2, HelpCircle } from 'lucide-react'
 import type { ReviewItem, ReviewStats } from '@/components/shop/ReviewList'
 
@@ -284,6 +289,13 @@ export default async function ProductPage({ params }: Props) {
 
             {/* Variant Selector — Color & Size */}
             <VariantSelector />
+
+            {/* Wholesale / Bulk Order Query for Importers */}
+            <WholesaleInquiry
+              productName={product.name}
+              productPrice={Number(product.price)}
+              sku={product.sku}
+            />
           </div>
 
           {/* COLUMN 3: Right Sticky Buy Box (3 cols on desktop) */}
@@ -302,6 +314,19 @@ export default async function ProductPage({ params }: Props) {
             {/* Delivery Estimator — below BuyBox */}
             <DeliveryEstimator price={Number(product.price)} />
           </div>
+        </div>
+
+        {/* Factory Direct Trust & Double QC Certification */}
+        <div className="mt-8">
+          <FactoryDirectTrust />
+        </div>
+
+        {/* Video Unboxing & Live Demo Showcase */}
+        <div className="mt-8">
+          <ProductVideoShowcase
+            productName={product.name}
+            thumbnailUrl={images[0]}
+          />
         </div>
 
         {/* Frequently Bought Together */}
@@ -347,6 +372,23 @@ export default async function ProductPage({ params }: Props) {
           <ProductQA productName={product.name} />
         </div>
 
+        {/* Compare with Similar Items */}
+        {bundleItems.length > 0 && (
+          <div className="mt-10">
+            <ProductCompareTable
+              currentProduct={{
+                id: product.id,
+                name: product.name,
+                slug: product.slug,
+                price: Number(product.price),
+                compare_price: product.compare_price ? Number(product.compare_price) : null,
+                image: images[0],
+              }}
+              similarProducts={bundleItems}
+            />
+          </div>
+        )}
+
         {/* Related & Customers Also Viewed */}
         <div className="mt-8 space-y-8">
           <RelatedProducts
@@ -356,6 +398,19 @@ export default async function ProductPage({ params }: Props) {
           />
         </div>
       </div>
+
+      {/* Sticky Bottom Quick Buy Bar on Scroll */}
+      <StickyBottomBuyBar
+        product={{
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          price: Number(product.price),
+          compare_price: product.compare_price ? Number(product.compare_price) : null,
+          image: images[0],
+          stock_quantity: product.stock_quantity,
+        }}
+      />
     </div>
   )
 }

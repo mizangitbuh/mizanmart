@@ -18,6 +18,7 @@ export function MobileBottomNav() {
   const itemCount = useCartStore((state) =>
     state.items.reduce((s, i) => s + i.quantity, 0)
   )
+  const openDrawer = useCartStore((state) => state.openDrawer)
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
@@ -38,6 +39,38 @@ export function MobileBottomNav() {
           const Icon = item.icon
           const active = isActive(item.href)
 
+          if (item.isCart) {
+            return (
+              <button
+                key={item.href}
+                type="button"
+                onClick={() => openDrawer?.()}
+                className="flex flex-col items-center justify-center gap-0.5 transition-colors relative min-h-[44px] min-w-[44px] cursor-pointer"
+                style={{
+                  color: active ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                }}
+              >
+                <div className="relative">
+                  <Icon size={20} strokeWidth={active ? 2.5 : 1.8} />
+                  {itemCount > 0 && (
+                    <span
+                      className="absolute -top-1.5 -right-2.5 min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center text-white text-[9px] font-bold"
+                      style={{ background: 'var(--color-primary)' }}
+                    >
+                      {itemCount > 99 ? '99+' : itemCount}
+                    </span>
+                  )}
+                </div>
+                <span
+                  className="text-[10px] font-semibold leading-none"
+                  style={{ color: active ? 'var(--color-primary)' : 'var(--color-text-muted)' }}
+                >
+                  {item.label}
+                </span>
+              </button>
+            )
+          }
+
           return (
             <Link
               key={item.href}
@@ -49,14 +82,6 @@ export function MobileBottomNav() {
             >
               <div className="relative">
                 <Icon size={20} strokeWidth={active ? 2.5 : 1.8} />
-                {item.isCart && itemCount > 0 && (
-                  <span
-                    className="absolute -top-1.5 -right-2.5 min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center text-white text-[9px] font-bold"
-                    style={{ background: 'var(--color-primary)' }}
-                  >
-                    {itemCount > 99 ? '99+' : itemCount}
-                  </span>
-                )}
               </div>
               <span
                 className="text-[10px] font-semibold leading-none"

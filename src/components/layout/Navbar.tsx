@@ -54,6 +54,7 @@ export function Navbar() {
   const megaRef = useRef<HTMLDivElement>(null)
   const megaTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const itemCount = useCartStore((state) => state.items.reduce((s, i) => s + i.quantity, 0))
+  const openDrawer = useCartStore((state) => state.openDrawer)
   const [storeSettings, setStoreSettings] = useState<any>(null)
 
   useEffect(() => {
@@ -268,9 +269,10 @@ export function Navbar() {
                 <span className="text-[10px] font-semibold hidden lg:block">পছন্দের তালিকা</span>
               </Link>
 
-              <Link
-                href="/cart"
-                className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded hover:bg-[var(--color-surface-hover)] transition-colors relative"
+              <button
+                type="button"
+                onClick={() => openDrawer?.()}
+                className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded hover:bg-[var(--color-surface-hover)] transition-colors relative cursor-pointer"
                 style={{ color: 'var(--color-text)' }}
                 aria-label="Cart"
               >
@@ -299,7 +301,7 @@ export function Navbar() {
                   )}
                 </div>
                 <span className="text-[10px] font-semibold hidden lg:block">কার্ট</span>
-              </Link>
+              </button>
             </div>
           </div>
 
