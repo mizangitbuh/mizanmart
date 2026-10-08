@@ -9,6 +9,7 @@ import { CategoryStrip } from '@/components/home/CategoryStrip'
 import { FlashDealsSection } from '@/components/home/FlashDealsSection'
 import { RecentlyViewed } from '@/components/home/RecentlyViewed'
 import { BrandShowcase } from '@/components/home/BrandShowcase'
+import { FeaturedSection } from '@/components/home/FeaturedSection'
 import { ArrowRight, Flame, Sparkles, Star, TrendingUp } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -31,22 +32,23 @@ export default async function HomePage() {
     heroBannerRes,
     promoBannersRes,
     topRatedRes,
+    featuredRes,
   ] = await Promise.all([
     supabase.from('categories').select('*').order('sort_order'),
     supabase
       .from('products')
-      .select('id, name, slug, price, compare_price, images, stock_quantity')
+      .select('id, name, slug, price, compare_price, images, stock_quantity, featured')
       .eq('status', 'active')
       .limit(10),
     supabase
       .from('products')
-      .select('id, name, slug, price, compare_price, images, stock_quantity')
+      .select('id, name, slug, price, compare_price, images, stock_quantity, featured')
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(10),
     supabase
       .from('products')
-      .select('id, name, slug, price, compare_price, images, stock_quantity')
+      .select('id, name, slug, price, compare_price, images, stock_quantity, featured')
       .eq('status', 'active')
       .not('compare_price', 'is', null)
       .order('compare_price', { ascending: false })
@@ -66,9 +68,16 @@ export default async function HomePage() {
       .order('sort_order'),
     supabase
       .from('products')
-      .select('id, name, slug, price, compare_price, images, stock_quantity')
+      .select('id, name, slug, price, compare_price, images, stock_quantity, featured')
       .eq('status', 'active')
       .limit(8),
+    supabase
+      .from('products')
+      .select('id, name, slug, price, compare_price, images, stock_quantity, featured')
+      .eq('status', 'active')
+      .eq('featured', true)
+      .order('created_at', { ascending: false })
+      .limit(10),
   ])
 
   const categories = categoriesRes.data || []
@@ -77,6 +86,7 @@ export default async function HomePage() {
   const flashSale = saleRes.data || []
   const heroBanner = heroBannerRes.data?.[0] || null
   const topRated = topRatedRes.data || []
+  const featuredProducts = (featuredRes.data || []) as any[]
 
   const now = new Date()
   const promoBanners = (promoBannersRes.data || []).filter((b: any) => {
@@ -92,6 +102,11 @@ export default async function HomePage() {
 
       {/* 2. Trust Strip (6-icon) */}
       <TrustStrip />
+
+      {/* ⭐ Featured Products (হোমপেজে বিশেষ প্রদর্শন) ⭐ */}
+      {featuredProducts.length > 0 && (
+        <FeaturedSection products={featuredProducts} />
+      )}
 
       {/* 3. Promo Tiles (3 tiles) */}
       <PromoBanners banners={promoBanners} />

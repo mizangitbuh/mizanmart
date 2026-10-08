@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { logAudit } from '@/lib/audit'
 
 interface BulkAction {
-  action: 'activate' | 'deactivate' | 'delete' | 'set_category'
+  action: 'activate' | 'deactivate' | 'delete' | 'set_category' | 'set_featured' | 'unset_featured'
   productIds: string[]
   categoryId?: string
 }
@@ -67,6 +67,18 @@ export async function POST(request: Request) {
         result = await supabase
           .from('products')
           .update({ category_id: categoryId, updated_at: new Date().toISOString() })
+          .in('id', productIds)
+        break
+      case 'set_featured':
+        result = await supabase
+          .from('products')
+          .update({ featured: true, updated_at: new Date().toISOString() })
+          .in('id', productIds)
+        break
+      case 'unset_featured':
+        result = await supabase
+          .from('products')
+          .update({ featured: false, updated_at: new Date().toISOString() })
           .in('id', productIds)
         break
       default:

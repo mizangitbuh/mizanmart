@@ -75,8 +75,25 @@ export function Hero({ banner }: Props) {
   const [current, setCurrent] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
 
-  // Use default slides always (DB banner integrated into first slot if exists)
-  const slides = DEFAULT_SLIDES
+  // Use default slides, integrating DB hero banner if present
+  const slides = banner
+    ? [
+        {
+          id: banner.id,
+          title: banner.title,
+          subtitle: banner.subtitle || 'Special Highlight',
+          description: banner.description || '',
+          cta_text: banner.cta_text || 'এখনই শপিং করুন',
+          cta_url: banner.cta_url || '/products',
+          bg: banner.background_color?.startsWith('#')
+            ? `linear-gradient(135deg, ${banner.background_color} 0%, #111827 100%)`
+            : banner.background_color || 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+          accent: banner.text_color || '#F59E0B',
+          emoji: '✨',
+        },
+        ...DEFAULT_SLIDES,
+      ]
+    : DEFAULT_SLIDES
 
   const next = useCallback(() => {
     setCurrent((c) => (c + 1) % slides.length)
@@ -103,7 +120,7 @@ export function Hero({ banner }: Props) {
       {/* Slides */}
       <div
         className="flex h-full transition-transform duration-500 ease-in-out"
-        style={{ transform: `translateX(-${current * 100}%)`, width: `${slides.length * 100}%` }}
+        style={{ transform: `translateX(-${(current * 100) / slides.length}%)`, width: `${slides.length * 100}%` }}
       >
         {slides.map((s) => (
           <div

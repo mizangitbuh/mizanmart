@@ -34,7 +34,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   // Build query
   let query = supabase
     .from('products')
-    .select('id, name, slug, price, compare_price, stock_quantity, sku, status, images, created_at, updated_at, category:categories(name)', { count: 'exact' })
+    .select('id, name, slug, price, compare_price, stock_quantity, sku, status, featured, images, created_at, updated_at, category:categories(name)', { count: 'exact' })
 
   // Search (name + SKU)
   if (params.q) {

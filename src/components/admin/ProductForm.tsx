@@ -502,10 +502,40 @@ export function ProductForm({ categories, initial }: Props) {
             Out of Stock
           </label>
         </div>
-        <label className="flex items-center gap-2 cursor-pointer text-sm text-[var(--color-text)]">
-          <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} />
-          Featured Product (হোমপেজে বিশেষ প্রদর্শন)
-        </label>
+        <div
+          onClick={() => setForm((f) => ({ ...f, featured: !f.featured }))}
+          className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
+            form.featured
+              ? 'border-amber-400 bg-amber-500/10 shadow-sm'
+              : 'border-[var(--color-border)] hover:border-gray-400'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{form.featured ? '⭐' : '☆'}</span>
+            <div>
+              <div className="text-sm font-bold text-[var(--color-text)] flex items-center gap-2">
+                Featured Product (হোমপেজে বিশেষ প্রদর্শন)
+                {form.featured && (
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500 text-white">
+                    হোমপেজে প্রদর্শিত হবে
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                এটি সক্রিয় থাকলে পণ্যটি হোমপেজের &ldquo;ফিচার্ড কালেকশন&rdquo; এবং বিশেষ হাইলাইটে সবার উপরে প্রদর্শিত হবে।
+              </p>
+            </div>
+          </div>
+          <input
+            type="checkbox"
+            checked={Boolean(form.featured)}
+            onChange={(e) => {
+              e.stopPropagation()
+              setForm((f) => ({ ...f, featured: e.target.checked }))
+            }}
+            className="w-5 h-5 accent-amber-500 rounded cursor-pointer"
+          />
+        </div>
       </div>
 
       {error && <div className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 p-3 rounded">{error}</div>}

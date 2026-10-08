@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Edit, Trash2, Package, Loader2, CheckSquare, Square, X } from 'lucide-react'
+import { Edit, Trash2, Package, Loader2, CheckSquare, Square, X, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { formatPrice } from '@/lib/utils'
@@ -18,6 +18,7 @@ interface Product {
   stock_quantity: number
   sku: string | null
   status: string
+  featured?: boolean
   images: string[]
   created_at: string
   updated_at: string | null
@@ -87,6 +88,27 @@ export function ProductsTable({ products, categories }: Props) {
     }
   }
 
+  const toggleFeatured = async (productId: string, currentFeatured: boolean) => {
+    setBusy(true)
+    try {
+      const res = await fetch('/api/admin/products/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: currentFeatured ? 'unset_featured' : 'set_featured',
+          productIds: [productId],
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to update featured status')
+      router.refresh()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Action failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const getCategoryName = (category: Product['category']): string => {
     if (!category) return '—'
     if (Array.isArray(category)) return category[0]?.name || '—'
@@ -144,6 +166,12 @@ export function ProductsTable({ products, categories }: Props) {
           </Button>
           <Button size="sm" variant="outline" onClick={() => runBulkAction('deactivate')} disabled={busy}>
             Deactivate
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => runBulkAction('set_featured')} disabled={busy}>
+            ⭐ Feature
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => runBulkAction('unset_featured')} disabled={busy}>
+            Unfeature
           </Button>
 
           {!showCategoryPicker ? (
@@ -242,6 +270,9 @@ export function ProductsTable({ products, categories }: Props) {
                 <th className="text-center px-4 py-3 font-bold text-[10px] uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
                   Status
                 </th>
+                <th className="text-center px-3 py-3 font-bold text-[10px] uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
+                  Featured
+                </th>
                 <th className="text-right px-4 py-3 font-bold text-[10px] uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
                   Actions
                 </th>
@@ -324,6 +355,21 @@ export function ProductsTable({ products, categories }: Props) {
                       <Badge variant={getStatusVariant(product.status)} size="sm">
                         {product.status}
                       </Badge>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <button
+                        type="button"
+                        onClick={() => toggleFeatured(product.id, Boolean(product.featured))}
+                        disabled={busy}
+                        className={`p-1.5 rounded-full transition-all inline-flex items-center justify-center hover:scale-125 ${
+                          product.featured
+                            ? 'text-amber-500 bg-amber-500/10 shadow-sm'
+                            : 'text-gray-300 hover:text-amber-400'
+                        }`}
+                        title={product.featured ? 'হোমপেজে ফিচার্ড (ক্লিক করে বন্ধ করুন)' : 'হোমপেজে ফিচার্ড করুন (ক্লিক করুন)'}
+                      >
+                        <Star size={16} fill={product.featured ? '#F59E0B' : 'none'} />
+                      </button>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link

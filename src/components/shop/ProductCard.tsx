@@ -16,6 +16,7 @@ export interface ProductCardData {
   compare_price: number | null
   images: string[]
   stock_quantity?: number
+  featured?: boolean
   initialWishlisted?: boolean
 }
 
@@ -164,8 +165,16 @@ export function ProductCard({ product, compact = false }: Props) {
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
 
-          {/* Discount badge */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
+          {/* Discount & Featured badge */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+            {product.featured && (
+              <span
+                className="text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm text-black flex items-center gap-0.5 tracking-wider uppercase"
+                style={{ background: '#F59E0B' }}
+              >
+                ⭐ FEATURED
+              </span>
+            )}
             {discount > 0 && (
               <span
                 className="text-[11px] font-black text-white px-2 py-0.5 rounded"
@@ -174,7 +183,7 @@ export function ProductCard({ product, compact = false }: Props) {
                 -{discount}%
               </span>
             )}
-            {discount === 0 && (
+            {discount === 0 && !product.featured && (
               <span
                 className="text-[10px] font-black text-white px-2 py-0.5 rounded"
                 style={{ background: 'var(--color-success)' }}
