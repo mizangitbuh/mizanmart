@@ -100,16 +100,35 @@ export function BuyBox({ product }: Props) {
         )}
       </div>
 
-      {/* Stock status */}
-      <div className="mb-4 pb-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+      {/* Stock status with Live Urgency Progress Bar */}
+      <div className="mb-4 pb-3 border-b space-y-2" style={{ borderColor: 'var(--color-border)' }}>
         {inStock ? (
           <div>
-            <span className="text-sm font-bold flex items-center gap-1" style={{ color: 'var(--color-success)' }}>
-              <CheckCircle2 size={16} /> স্টকে আছে
-            </span>
-            {lowStock && (
-              <span className="text-xs font-semibold block mt-0.5" style={{ color: 'var(--color-warning)' }}>
-                দ্রুত অর্ডার করুন, মাত্র {product.stock_quantity}টি বাকি!
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="font-bold flex items-center gap-1" style={{ color: 'var(--color-success)' }}>
+                <CheckCircle2 size={15} /> স্টকে আছে (In Stock)
+              </span>
+              <span className="font-semibold text-gray-500">
+                {product.stock_quantity ? `${product.stock_quantity}টি অবশিষ্ট` : 'সীমিত স্টক'}
+              </span>
+            </div>
+            {/* Visual Stock Progress Bar */}
+            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.max(20, Math.min(90, ((product.stock_quantity || 8) / 15) * 100))}%`,
+                  background: lowStock ? 'linear-gradient(90deg, #EF4444, #F59E0B)' : 'linear-gradient(90deg, #10B981, #059669)',
+                }}
+              />
+            </div>
+            {lowStock ? (
+              <span className="text-[11px] font-bold block text-red-600 animate-pulse mt-1">
+                🔥 দ্রুত অর্ডার করুন, মাত্র {product.stock_quantity}টি বাকি রয়েছে!
+              </span>
+            ) : (
+              <span className="text-[11px] text-gray-500 block mt-1">
+                ⚡ দ্রুত ডেলিভারির জন্য আজই অর্ডার কনফার্ম করুন
               </span>
             )}
           </div>
@@ -118,6 +137,17 @@ export function BuyBox({ product }: Props) {
             দুঃখিত, স্টক শেষ
           </span>
         )}
+      </div>
+
+      {/* Reward Points / Cashback Badge */}
+      <div className="mb-4 p-2.5 rounded-lg bg-amber-50 border border-amber-200/80 flex items-center gap-2.5 text-xs">
+        <span className="text-base flex-shrink-0">🪙</span>
+        <div>
+          <span className="font-bold text-amber-900">MizanMart ক্যাশব্যাক রিওয়ার্ড:</span>
+          <span className="text-amber-800 ml-1">
+            এই অর্ডারে পাবেন <strong className="font-black text-amber-950">{Math.max(10, Math.round(product.price * 0.02))} পয়েন্ট</strong>
+          </span>
+        </div>
       </div>
 
       {/* Quantity & CTA */}

@@ -8,6 +8,11 @@ import { RelatedProducts } from '@/components/shop/RelatedProducts'
 import { BuyBox } from '@/components/shop/BuyBox'
 import { ProductViewTracker } from '@/components/shop/ProductViewTracker'
 import { StarRating } from '@/components/shop/StarRating'
+import { FrequentlyBoughtTogether } from '@/components/shop/FrequentlyBoughtTogether'
+import { DeliveryEstimator } from '@/components/shop/DeliveryEstimator'
+import { VariantSelector } from '@/components/shop/VariantSelector'
+import { ProductQA } from '@/components/shop/ProductQA'
+import { CustomerPhotoReviews } from '@/components/shop/CustomerPhotoReviews'
 import { Check, ShieldCheck, Truck, RotateCcw, Share2, HelpCircle } from 'lucide-react'
 import type { ReviewItem, ReviewStats } from '@/components/shop/ReviewList'
 
@@ -109,6 +114,28 @@ export default async function ProductPage({ params }: Props) {
   }
 
   const isLoggedIn = !!user
+
+  // ─── Fetch related products for FrequentlyBoughtTogether ───
+  let bundleItems: Array<{ id: string; name: string; slug: string; price: number; compare_price: number | null; image: string }> = []
+  if (product.category_id) {
+    const { data: relatedProducts } = await supabase
+      .from('products')
+      .select('id, name, slug, price, compare_price, images')
+      .eq('status', 'active')
+      .eq('category_id', product.category_id)
+      .neq('id', product.id)
+      .limit(2)
+    if (relatedProducts && relatedProducts.length > 0) {
+      bundleItems = relatedProducts.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        price: Number(p.price),
+        compare_price: p.compare_price ? Number(p.compare_price) : null,
+        image: p.images?.[0] || `https://picsum.photos/seed/${p.slug}/400/400`,
+      }))
+    }
+  }
 
   // Sample high-conversion bullet points for Amazon-like density
   const highlights = [
@@ -254,10 +281,13 @@ export default async function ProductPage({ params }: Props) {
                 {product.description}
               </div>
             )}
+
+            {/* Variant Selector — Color & Size */}
+            <VariantSelector />
           </div>
 
           {/* COLUMN 3: Right Sticky Buy Box (3 cols on desktop) */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 space-y-4">
             <BuyBox
               product={{
                 id: product.id,
@@ -269,8 +299,27 @@ export default async function ProductPage({ params }: Props) {
                 stock_quantity: product.stock_quantity,
               }}
             />
+            {/* Delivery Estimator — below BuyBox */}
+            <DeliveryEstimator price={Number(product.price)} />
           </div>
         </div>
+
+        {/* Frequently Bought Together */}
+        {bundleItems.length > 0 && (
+          <div className="mt-8">
+            <FrequentlyBoughtTogether
+              mainProduct={{
+                id: product.id,
+                name: product.name,
+                slug: product.slug,
+                price: Number(product.price),
+                compare_price: product.compare_price ? Number(product.compare_price) : null,
+                image: images[0],
+              }}
+              bundleItems={bundleItems}
+            />
+          </div>
+        )}
 
         {/* Tabs Section: Description, Delivery, Returns, Reviews */}
         <div id="reviews-section" className="mt-10">
@@ -286,6 +335,16 @@ export default async function ProductPage({ params }: Props) {
             isLoggedIn={isLoggedIn}
             userReviewStatus={userReviewStatus}
           />
+        </div>
+
+        {/* Customer Photo Reviews */}
+        <div className="mt-10">
+          <CustomerPhotoReviews productName={product.name} seed={product.slug} />
+        </div>
+
+        {/* Customer Questions & Answers */}
+        <div className="mt-10">
+          <ProductQA productName={product.name} />
         </div>
 
         {/* Related & Customers Also Viewed */}

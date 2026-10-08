@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
+import { OrderTrackingTimeline } from '@/components/shop/OrderTrackingTimeline'
 import { ArrowLeft, Package, MapPin, Phone, Mail, CreditCard, Clock, CheckCircle, Download } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -99,50 +100,12 @@ export default async function OrderDetailPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Timeline */}
-      {!isCancelled && (
-        <div
-          className="p-5 rounded-[var(--radius-lg)] border"
-          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-        >
-          <h3 className="font-black text-sm mb-4" style={{ color: 'var(--color-text)' }}>Order Timeline</h3>
-          <div className="flex items-center gap-0">
-            {timelineSteps.map((step, idx) => {
-              const Icon = step.icon
-              const isActive = idx <= currentStepIndex
-              const isCurrent = idx === currentStepIndex
-              return (
-                <div key={step.key} className="flex-1 flex items-center">
-                  <div className="flex flex-col items-center flex-shrink-0">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-                      style={{
-                        background: isActive ? 'var(--color-primary)' : 'var(--color-surface-hover)',
-                        color: isActive ? 'white' : 'var(--color-text-muted)',
-                        border: isCurrent ? '3px solid var(--color-primary-light)' : 'none',
-                      }}
-                    >
-                      <Icon size={16} />
-                    </div>
-                    <div
-                      className="text-[10px] font-bold mt-2 text-center whitespace-nowrap"
-                      style={{ color: isActive ? 'var(--color-primary)' : 'var(--color-text-muted)' }}
-                    >
-                      {step.label}
-                    </div>
-                  </div>
-                  {idx < timelineSteps.length - 1 && (
-                    <div
-                      className="flex-1 h-0.5 -mt-5"
-                      style={{ background: idx < currentStepIndex ? 'var(--color-primary)' : 'var(--color-border)' }}
-                    />
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+      {/* Bengali Visual Live Order Tracking Timeline */}
+      <OrderTrackingTimeline
+        status={order.status}
+        orderNumber={order.order_number}
+        createdAt={order.created_at}
+      />
 
       {/* Items */}
       <div

@@ -8,6 +8,7 @@ import { NewsletterCTA } from '@/components/home/NewsletterCTA'
 import { CategoryStrip } from '@/components/home/CategoryStrip'
 import { FlashDealsSection } from '@/components/home/FlashDealsSection'
 import { RecentlyViewed } from '@/components/home/RecentlyViewed'
+import { BrandShowcase } from '@/components/home/BrandShowcase'
 import { ArrowRight, Flame, Sparkles, Star, TrendingUp } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -100,6 +101,9 @@ export default async function HomePage() {
 
       {/* 5. Flash Deals Carousel */}
       <FlashDealsSection products={flashSale} />
+
+      {/* 5b. Brand Showcase — Top Brands */}
+      <BrandShowcase />
 
       {/* 6. Shop by Category (grid) */}
       {categories.length > 0 && (
