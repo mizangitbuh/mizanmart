@@ -10,6 +10,7 @@ export const dynamic = 'force-dynamic'
 interface Props {
   searchParams: Promise<{
     category?: string
+    gender?: string
     q?: string
     sort?: string
     min?: string
@@ -48,6 +49,10 @@ export default async function ProductsPage({ searchParams }: Props) {
     query = query.eq('category_id', currentCategory.id)
   }
 
+  if (params.gender) {
+    query = query.ilike('description', `%[GENDER: ${params.gender}]%`)
+  }
+
   if (params.q) {
     const searchTerm = `%${params.q}%`
     query = query.or(`name.ilike.${searchTerm},description.ilike.${searchTerm},slug.ilike.${searchTerm}`)
@@ -84,6 +89,15 @@ export default async function ProductsPage({ searchParams }: Props) {
   // Active filters for chips
   const activeFilters: { label: string; remove: string }[] = []
   if (params.category) activeFilters.push({ label: `ক্যাটাগরি: ${currentCategory?.name || params.category}`, remove: buildUrl({ category: undefined }) })
+  if (params.gender) {
+    const genderLabels: Record<string, string> = {
+      male: '👨 পুরুষ (Men)',
+      female: '👩 মহিলা (Women)',
+      unisex: '👫 ইউনিসেক্স (Unisex)',
+      kids: '👶 বাচ্চাদের (Kids)',
+    }
+    activeFilters.push({ label: `জেন্ডার: ${genderLabels[params.gender] || params.gender}`, remove: buildUrl({ gender: undefined }) })
+  }
   if (params.q) activeFilters.push({ label: `খোঁজা: "${params.q}"`, remove: buildUrl({ q: undefined }) })
   if (params.min || params.max) activeFilters.push({ label: `দাম: ৳${params.min || '০'} - ৳${params.max || '∞'}`, remove: buildUrl({ min: undefined, max: undefined }) })
   if (params.available) activeFilters.push({ label: 'স্টকে আছে', remove: buildUrl({ available: undefined }) })
@@ -173,6 +187,36 @@ export default async function ProductsPage({ searchParams }: Props) {
                         className="accent-[var(--color-primary)]"
                       />
                       {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Gender filter */}
+              <div className="p-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                <h3 className="font-bold text-xs mb-3 uppercase tracking-wider" style={{ color: 'var(--color-text)' }}>
+                  জেন্ডার (Gender)
+                </h3>
+                <div className="space-y-1.5">
+                  {[
+                    { id: 'male', label: '👨 পুরুষ (Men)' },
+                    { id: 'female', label: '👩 মহিলা (Women)' },
+                    { id: 'unisex', label: '👫 ইউনিসেক্স (Unisex)' },
+                    { id: 'kids', label: '👶 বাচ্চাদের (Kids)' },
+                  ].map((g) => (
+                    <Link
+                      key={g.id}
+                      href={buildUrl({ gender: params.gender === g.id ? undefined : g.id })}
+                      className={`flex items-center gap-2 text-xs py-1.5 px-2 rounded transition-colors ${params.gender === g.id ? 'font-bold' : 'hover:bg-[var(--color-surface-hover)]'}`}
+                      style={params.gender === g.id ? { color: 'var(--color-primary)', background: 'var(--color-primary-light)' } : { color: 'var(--color-text)' }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={params.gender === g.id}
+                        readOnly
+                        className="accent-[var(--color-primary)]"
+                      />
+                      {g.label}
                     </Link>
                   ))}
                 </div>
@@ -346,15 +390,28 @@ export default async function ProductsPage({ searchParams }: Props) {
               </div>
             )}
 
-            {/* Category chips on mobile */}
+            {/* Category & Gender chips on mobile */}
             <div className="lg:hidden flex gap-2 overflow-x-auto pb-2 mb-4" style={{ scrollbarWidth: 'none' }}>
               <Link
-                href={buildUrl({ category: undefined })}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition ${!params.category ? 'bg-[var(--color-primary)] text-white' : 'border'}`}
-                style={!params.category ? {} : { borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+                href={buildUrl({ category: undefined, gender: undefined })}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition ${!params.category && !params.gender ? 'bg-[var(--color-primary)] text-white' : 'border'}`}
+                style={!params.category && !params.gender ? {} : { borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
               >
                 সব
               </Link>
+              {[
+                { id: 'male', label: '👨 পুরুষ' },
+                { id: 'female', label: '👩 মহিলা' },
+              ].map((g) => (
+                <Link
+                  key={g.id}
+                  href={buildUrl({ gender: params.gender === g.id ? undefined : g.id })}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition whitespace-nowrap ${params.gender === g.id ? 'bg-[var(--color-primary)] text-white' : 'border'}`}
+                  style={params.gender === g.id ? {} : { borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+                >
+                  {g.label}
+                </Link>
+              ))}
               {categories?.map((cat) => (
                 <Link
                   key={cat.id}

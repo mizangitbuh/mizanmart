@@ -141,14 +141,21 @@ export default async function ProductPage({ params }: Props) {
     }
   }
 
-  // ─── Parse available sizes metadata from description ───
+  // ─── Parse available sizes & gender metadata from description ───
   let cleanDescription = product.description || ''
   let productSizes: string[] = []
+  let productGender = ''
+
   if (product.description) {
     const sizeMatch = product.description.match(/\[SIZES:\s*([^\]]+)\]/i)
     if (sizeMatch) {
       productSizes = sizeMatch[1].split(',').map((s: string) => s.trim()).filter(Boolean)
-      cleanDescription = product.description.replace(/\[SIZES:\s*([^\]]+)\]/gi, '').trim()
+      cleanDescription = cleanDescription.replace(/\[SIZES:\s*([^\]]+)\]/gi, '').trim()
+    }
+    const genderMatch = product.description.match(/\[GENDER:\s*([^\]]+)\]/i)
+    if (genderMatch) {
+      productGender = genderMatch[1].trim().toLowerCase()
+      cleanDescription = cleanDescription.replace(/\[GENDER:\s*([^\]]+)\]/gi, '').trim()
     }
   }
 
@@ -209,15 +216,35 @@ export default async function ProductPage({ params }: Props) {
           {/* COLUMN 2: Center Info (4 cols on desktop) */}
           <div className="lg:col-span-4 space-y-4">
             <div>
-              {categoryData && (
-                <Link
-                  href={`/products?category=${categoryData.slug}`}
-                  className="text-xs font-bold uppercase tracking-wider hover:underline"
-                  style={{ color: 'var(--color-primary)' }}
-                >
-                  {categoryData.name}
-                </Link>
-              )}
+              <div className="flex items-center gap-2 flex-wrap">
+                {categoryData && (
+                  <Link
+                    href={`/products?category=${categoryData.slug}`}
+                    className="text-xs font-bold uppercase tracking-wider hover:underline"
+                    style={{ color: 'var(--color-primary)' }}
+                  >
+                    {categoryData.name}
+                  </Link>
+                )}
+                {productGender && (
+                  <span
+                    className="text-[11px] font-bold px-2 py-0.5 rounded-full border inline-flex items-center gap-1"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      background: 'var(--color-surface)',
+                      color: 'var(--color-text)',
+                    }}
+                  >
+                    {productGender === 'male'
+                      ? '👨 পুরুষ (Men)'
+                      : productGender === 'female'
+                      ? '👩 মহিলা (Women)'
+                      : productGender === 'kids'
+                      ? '👶 বাচ্চাদের (Kids)'
+                      : '👫 ইউনিসেক্স (Unisex)'}
+                  </span>
+                )}
+              </div>
               <h1 className="text-xl md:text-2xl font-black mt-1 leading-snug" style={{ color: 'var(--color-text)' }}>
                 {product.name}
               </h1>
@@ -281,6 +308,20 @@ export default async function ProductPage({ params }: Props) {
                   <span className="w-1/3 text-[var(--color-text-muted)]">ক্যাটাগরি</span>
                   <span className="w-2/3 font-medium text-[var(--color-text)]">{categoryData?.name || 'General'}</span>
                 </div>
+                {productGender && (
+                  <div className="flex px-3 py-2">
+                    <span className="w-1/3 text-[var(--color-text-muted)]">জেন্ডার</span>
+                    <span className="w-2/3 font-medium text-[var(--color-text)]">
+                      {productGender === 'male'
+                        ? '👨 পুরুষ (Men)'
+                        : productGender === 'female'
+                        ? '👩 মহিলা (Women)'
+                        : productGender === 'kids'
+                        ? '👶 বাচ্চাদের (Kids)'
+                        : '👫 ইউনিসেক্স (Unisex)'}
+                    </span>
+                  </div>
+                )}
                 <div className="flex px-3 py-2">
                   <span className="w-1/3 text-[var(--color-text-muted)]">উপলব্ধতা</span>
                   <span className="w-2/3 font-semibold" style={{ color: inStock ? 'var(--color-success)' : 'var(--color-error)' }}>

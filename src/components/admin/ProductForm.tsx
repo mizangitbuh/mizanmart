@@ -21,15 +21,25 @@ interface Props {
 
 const COMMON_SIZES = ['S', 'M', 'L', 'XL', 'XXL', '3XL', 'Free Size', '28', '30', '32', '34', '36', '38']
 
-function parseInitialSizes(desc?: string | null): { cleanDesc: string; initialSizes: string[] } {
-  if (!desc) return { cleanDesc: '', initialSizes: [] }
-  const match = desc.match(/\[SIZES:\s*([^\]]+)\]/i)
-  if (match) {
-    const initialSizes = match[1].split(',').map((s) => s.trim()).filter(Boolean)
-    const cleanDesc = desc.replace(/\[SIZES:\s*([^\]]+)\]/gi, '').trim()
-    return { cleanDesc, initialSizes }
+function parseInitialMetadata(desc?: string | null): { cleanDesc: string; initialSizes: string[]; initialGender: string } {
+  if (!desc) return { cleanDesc: '', initialSizes: [], initialGender: '' }
+  let cleanDesc = desc
+  let initialSizes: string[] = []
+  let initialGender = ''
+
+  const sizeMatch = cleanDesc.match(/\[SIZES:\s*([^\]]+)\]/i)
+  if (sizeMatch) {
+    initialSizes = sizeMatch[1].split(',').map((s) => s.trim()).filter(Boolean)
+    cleanDesc = cleanDesc.replace(/\[SIZES:\s*([^\]]+)\]/gi, '').trim()
   }
-  return { cleanDesc: desc, initialSizes: [] }
+
+  const genderMatch = cleanDesc.match(/\[GENDER:\s*([^\]]+)\]/i)
+  if (genderMatch) {
+    initialGender = genderMatch[1].trim().toLowerCase()
+    cleanDesc = cleanDesc.replace(/\[GENDER:\s*([^\]]+)\]/gi, '').trim()
+  }
+
+  return { cleanDesc, initialSizes, initialGender }
 }
 
 export function ProductForm({ categories, initial }: Props) {
@@ -38,11 +48,12 @@ export function ProductForm({ categories, initial }: Props) {
   const [error, setError] = useState('')
   const [generatingSku, setGeneratingSku] = useState(false)
 
-  // Parse initial sizes from description if present
-  const { cleanDesc, initialSizes } = parseInitialSizes(initial?.description)
+  // Parse initial sizes & gender from description if present
+  const { cleanDesc, initialSizes, initialGender } = parseInitialMetadata(initial?.description)
   const [hasSizes, setHasSizes] = useState(initialSizes.length > 0)
   const [selectedSizes, setSelectedSizes] = useState<string[]>(initialSizes)
   const [customSizeInput, setCustomSizeInput] = useState('')
+  const [gender, setGender] = useState<string>(initialGender || '')
 
   const [form, setForm] = useState({
     name: initial?.name || '',
@@ -154,8 +165,13 @@ export function ProductForm({ categories, initial }: Props) {
       finalSku = `MZ${maxNum + 1}`
     }
 
-    // Build final description with sizes metadata if enabled
+    // Build final description with sizes & gender metadata if enabled
     let finalDescription = form.description ? form.description.trim() : ''
+    if (gender) {
+      finalDescription = finalDescription
+        ? `${finalDescription}\n\n[GENDER: ${gender}]`
+        : `[GENDER: ${gender}]`
+    }
     if (hasSizes && selectedSizes.length > 0) {
       finalDescription = finalDescription
         ? `${finalDescription}\n\n[SIZES: ${selectedSizes.join(', ')}]`
@@ -408,20 +424,69 @@ export function ProductForm({ categories, initial }: Props) {
 
       {/* 5. Category & Status */}
       <div className="bg-[var(--color-surface)] p-6 rounded-xl border border-[var(--color-border)] space-y-4">
-        <h2 className="font-bold text-[var(--color-text)]">ক্যাটাগরি ও স্ট্যাটাস</h2>
-        <div>
-          <label className="block text-sm font-medium mb-2 text-[var(--color-text)]">Category</label>
-          <select
-            value={form.category_id}
-            onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-            className="w-full px-3 py-2 rounded-lg border bg-[var(--color-background)] text-[var(--color-text)]"
-            style={{ borderColor: 'var(--color-border)' }}
-          >
-            <option value="">— Select Category —</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+        <h2 className="font-bold text-[var(--color-text)]">ক্যাটাগরি, জেন্ডার ও স্ট্যাটাস</h2>
+        
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Main Category */}
+          <div>
+            <label className="block text-sm font-medium mb-2 text-[var(--color-text)]">
+              Category (মূল ক্যাটাগরি) *
+            </label>
+            <select
+              value={form.category_id}
+              onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-primary)]"
+              style={{ borderColor: 'var(--color-border)' }}
+            >
+              <option value="">— Select Category —</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Gender / Target Category (Male / Female) */}
+          <div>
+            <label className="block text-sm font-medium mb-2 text-[var(--color-text)]">
+              জেন্ডার ক্যাটাগরি (Gender: Male, Female)
+            </label>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-primary)]"
+              style={{ borderColor: 'var(--color-border)' }}
+            >
+              <option value="">— প্রযোজ্য নয় / সবার জন্য (Any / All) —</option>
+              <option value="male">👨 পুরুষ (Male / Men)</option>
+              <option value="female">👩 মহিলা (Female / Women)</option>
+              <option value="unisex">👫 ইউনিসেক্স (Unisex / Both)</option>
+              <option value="kids">👶 বাচ্চাদের (Kids)</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Quick Gender Select Buttons */}
+        <div className="flex items-center gap-2 pt-0.5 flex-wrap">
+          <span className="text-xs text-gray-500 font-semibold">কুইক জেন্ডার সিলেক্ট:</span>
+          {[
+            { id: 'male', label: '👨 Male (পুরুষ)' },
+            { id: 'female', label: '👩 Female (মহিলা)' },
+            { id: 'unisex', label: '👫 Unisex' },
+            { id: '', label: 'মুছে ফেলুন (None)' },
+          ].map((g) => (
+            <button
+              key={g.id}
+              type="button"
+              onClick={() => setGender(g.id)}
+              className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                gender === g.id
+                  ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] text-[var(--color-primary)] font-bold'
+                  : 'border-[var(--color-border)] text-gray-600 hover:border-gray-400'
+              }`}
+            >
+              {g.label}
+            </button>
+          ))}
         </div>
         <div className="flex gap-4">
           <label className="flex items-center gap-2 cursor-pointer text-sm text-[var(--color-text)]">
