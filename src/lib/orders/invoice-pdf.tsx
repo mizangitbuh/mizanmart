@@ -336,7 +336,7 @@ export function InvoiceDocument({ order, productImages = {}, qrDataUrl }: Props)
             <Text style={styles.contactLine}>
               <Text style={styles.contactBold}>www.martivo.com</Text>
             </Text>
-            <Text style={styles.contactLine}>jobmizanew@gmail.com</Text>
+            <Text style={styles.contactLine}>martivocom@gmail.com</Text>
             <Text style={styles.contactLine}>+880 1700 000000</Text>
             <Text style={styles.contactLine}>Dhaka, Bangladesh</Text>
           </View>

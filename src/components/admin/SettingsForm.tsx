@@ -193,7 +193,7 @@ export function SettingsForm({ initialSettings }: Props) {
                 type="email"
                 value={settings.support_email}
                 onChange={(e) => handleChange('support_email', e.target.value)}
-                placeholder="jobmizanew@gmail.com"
+                placeholder="martivocom@gmail.com"
               />
             </div>
 

@@ -47,7 +47,7 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   id: 'default',
   store_name: 'Martivo',
   store_tagline: 'Your trusted online shopping destination',
-  support_email: 'jobmizanew@gmail.com',
+  support_email: 'martivocom@gmail.com',
   support_phone: '+8801700000000',
   support_whatsapp: '+8801700000000',
   store_address: 'Dhaka, Bangladesh',

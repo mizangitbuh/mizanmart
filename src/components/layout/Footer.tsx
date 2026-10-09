@@ -58,7 +58,7 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2 text-xs text-gray-400">
                 <Mail size={13} style={{ color: 'var(--color-primary)' }} />
-                <span>jobmizanew@gmail.com</span>
+                <span>martivocom@gmail.com</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-gray-400">
                 <MapPin size={13} style={{ color: 'var(--color-primary)' }} />
