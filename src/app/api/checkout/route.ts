@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { checkoutLimiter, getClientIp } from '@/lib/rate-limit'
 import { getStoreSettings } from '@/lib/settings'
+import { sendEmail } from '@/lib/email/client'
+import { orderConfirmationEmail } from '@/lib/email/templates/order-confirmation'
 
 // ═══════════════════════════════════════════════════════════
 // SECURE CHECKOUT API with Rate Limiting
@@ -324,6 +326,60 @@ export async function POST(request: Request) {
     // ═══════════════════════════════════════════════════════════
     // SUCCESS
     // ═══════════════════════════════════════════════════════════
+
+    // ═══════════════════════════════════════════════════════════
+    // SEND ORDER CONFIRMATION EMAIL (best-effort, non-blocking)
+    // ═══════════════════════════════════════════════════════════
+
+    if (form.email?.trim()) {
+      try {
+        const siteUrl =
+          process.env.NEXT_PUBLIC_SITE_URL ||
+          new URL(request.url).origin ||
+          'http://localhost:3000'
+
+        const { subject, html } = orderConfirmationEmail({
+          order: {
+            id: order.id,
+            order_number: order.order_number,
+            created_at: order.created_at,
+            customer_name: order.customer_name || form.name.trim(),
+            customer_email: order.customer_email,
+            shipping_address: order.shipping_address,
+            payment_method: order.payment_method,
+            payment_status: order.payment_status,
+            subtotal: Number(order.subtotal),
+            shipping_cost: Number(order.shipping_cost),
+            discount: Number(order.discount),
+            total: Number(order.total),
+            coupon_code: order.coupon_code,
+          },
+          items: validatedItems.map((it) => ({
+            product_name: it.product_name,
+            quantity: it.quantity,
+            price: Number(it.price),
+            subtotal: Number(it.subtotal),
+          })),
+          siteUrl,
+        })
+
+        const result = await sendEmail({
+          to: form.email.trim(),
+          subject,
+          html,
+          tags: [{ name: 'category', value: 'order-confirmation' }],
+        })
+
+        if (!result.success) {
+          console.error('[checkout] Order confirmation email failed:', result.error)
+        } else {
+          console.log('[checkout] Order confirmation email sent:', result.id)
+        }
+      } catch (emailErr) {
+        // Never fail the order because of email
+        console.error('[checkout] Email exception:', emailErr)
+      }
+    }
 
     return NextResponse.json({
       success: true,
