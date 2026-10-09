@@ -11,6 +11,7 @@ import {
   Users,
   Warehouse,
   Ticket,
+  Mail,
   Image as ImageIcon,
   BarChart3,
   Settings,
@@ -66,6 +67,7 @@ const sections: Array<{ title: string; items: SidebarItem[] }> = [
     items: [
       { href: '/admin/coupons', label: 'Coupons', icon: Ticket, badge: 'OFF' },
       { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
+      { href: '/admin/newsletter', label: 'Newsletter', icon: Mail },
       { href: '/admin/reviews', label: 'Reviews', icon: Star, badge: 'REVIEWS' },
     ],
   },

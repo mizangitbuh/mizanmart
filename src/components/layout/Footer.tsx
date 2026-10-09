@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Share2, MessageCircle, Send } from 'lucide-react'
 import { Logo } from '@/components/shared/Logo'
+import { NewsletterSignup } from '@/components/home/NewsletterSignup'
 
 const shopLinks = [
   { name: 'সব পণ্য', href: '/products' },
@@ -121,21 +122,7 @@ export function Footer() {
             <p className="text-xs text-gray-400 mb-3">
               সর্বশেষ অফার ও ডিল সরাসরি আপনার ইনবক্সে পান
             </p>
-            <form className="flex gap-2 mb-5" onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="email"
-                placeholder="আপনার ইমেইল"
-                className="flex-1 px-3 py-2 rounded-l text-xs text-black focus:outline-none"
-                style={{ background: '#f3f4f6', color: '#171717' }}
-              />
-              <button
-                type="submit"
-                className="px-3 py-2 rounded-r text-white flex items-center gap-1 text-xs font-bold transition-opacity hover:opacity-90"
-                style={{ background: 'var(--color-primary)' }}
-              >
-                <Send size={13} />
-              </button>
-            </form>
+            <NewsletterSignup />
 
             {/* Payment methods */}
             <h3 className="font-black text-xs mb-2 text-white">পেমেন্ট পদ্ধতি</h3>
