@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { logAudit } from '@/lib/audit'
+import { sendEmail } from '@/lib/email/client'
+import { orderStatusUpdateEmail } from '@/lib/email/templates/order-status-update'
 import {
   isValidStatus,
   isValidPaymentStatus,
@@ -181,6 +183,67 @@ export async function PATCH(
         performed_at: new Date().toISOString(),
       },
     })
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // SEND STATUS UPDATE EMAIL (best-effort, non-blocking)
+  // Only when status actually changed + customer has email
+  // ═══════════════════════════════════════════════════════════
+
+  const statusChanged =
+    patch.status !== undefined && patch.status !== before.status
+
+  const emailableStatuses = ['confirmed', 'shipped', 'delivered', 'cancelled']
+
+  if (
+    statusChanged &&
+    emailableStatuses.includes(patch.status as string) &&
+    after.customer_email
+  ) {
+    try {
+      const siteUrl =
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        new URL(request.url).origin ||
+        'http://localhost:3000'
+
+      const { subject, html } = orderStatusUpdateEmail({
+        order: {
+          id: after.id,
+          order_number: after.order_number,
+          created_at: after.created_at,
+          customer_name: after.customer_name || 'Customer',
+          total: Number(after.total),
+          payment_method: after.payment_method,
+          shipping_address: after.shipping_address,
+        },
+        newStatus: patch.status as
+          | 'pending'
+          | 'confirmed'
+          | 'shipped'
+          | 'delivered'
+          | 'cancelled',
+        siteUrl,
+      })
+
+      const result = await sendEmail({
+        to: after.customer_email,
+        subject,
+        html,
+        tags: [
+          { name: 'category', value: 'order-status-update' },
+          { name: 'status', value: patch.status as string },
+        ],
+      })
+
+      if (!result.success) {
+        console.error('[order-status-update] Email failed:', result.error)
+      } else {
+        console.log('[order-status-update] Email sent:', result.id)
+      }
+    } catch (emailErr) {
+      // Never fail the order update because of email
+      console.error('[order-status-update] Email exception:', emailErr)
+    }
   }
 
   return NextResponse.json({ success: true, order: after })
