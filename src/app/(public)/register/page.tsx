@@ -33,6 +33,17 @@ export default function RegisterPage() {
       setLoading(false)
       return
     }
+
+    // Send welcome email (best-effort, non-blocking)
+    try {
+      await fetch('/api/auth/welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+    } catch (emailErr) {
+      console.error('[register] Welcome email failed:', emailErr)
+    }
+
     router.push('/')
     router.refresh()
   }
