@@ -2,6 +2,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav'
 import { FloatingSupportWidget } from '@/components/home/FloatingSupportWidget'
+import { ChatWidget } from '@/components/support/ChatWidget'
 import { CartDrawer } from '@/components/shop/CartDrawer'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -13,6 +14,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <MobileBottomNav />
       {/* Global overlays — support & cart drawer */}
       <FloatingSupportWidget />
+      <ChatWidget />
       <CartDrawer />
     </div>
   )

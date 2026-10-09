@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
 import { OrderTrackingTimeline } from '@/components/shop/OrderTrackingTimeline'
+import { AskAboutOrderButton } from '@/components/support/AskAboutOrderButton'
 import { ArrowLeft, Package, MapPin, Phone, Mail, CreditCard, Clock, CheckCircle, Download } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -83,6 +84,7 @@ export default async function OrderDetailPage({ params }: Props) {
           <Badge variant={statusVariants[order.status] || 'default'}>
             {order.status.toUpperCase()}
           </Badge>
+          <AskAboutOrderButton orderId={order.id} orderNumber={order.order_number} />
           <a
             href={`/api/orders/${order.id}/invoice`}
             target="_blank"

@@ -42,12 +42,26 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     )
   }
 
+  // Unread support messages (customer → admin, not yet read)
+  let unreadSupport = 0
+  try {
+    const { count } = await supabase
+      .from('messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('sender_role', 'customer')
+      .is('read_at', null)
+    unreadSupport = count || 0
+  } catch {
+    unreadSupport = 0
+  }
+
   return (
     <AdminShell
       userName={profile.full_name || user.email || 'Admin'}
       userEmail={profile.email || user.email || ''}
       userRole={profile.role || 'admin'}
       notificationCount={0}
+      unreadSupport={unreadSupport}
     >
       {children}
     </AdminShell>

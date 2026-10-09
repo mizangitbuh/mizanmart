@@ -6,6 +6,7 @@ import { OrderStatusFlow } from '@/components/admin/OrderStatusFlow'
 import { PaymentStatusFlow } from '@/components/admin/PaymentStatusFlow'
 import { RefundSummary } from '@/components/admin/RefundSummary'
 import { OrderTimeline, type AuditLogEntry } from '@/components/admin/OrderTimeline'
+import { ChatWithCustomerButton } from '@/components/admin/ChatWithCustomerButton'
 import { ArrowLeft, User, MapPin, Package, Printer } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -68,6 +69,11 @@ export default async function OrderDetailPage({ params }: Props) {
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
+          <ChatWithCustomerButton
+            customerId={(order as any).user_id ?? null}
+            orderId={order.id}
+            orderNumber={order.order_number}
+          />
           <a
             href={`/api/admin/orders/${order.id}/invoice`}
             target="_blank"

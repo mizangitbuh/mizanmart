@@ -10,14 +10,15 @@ interface Props {
   userEmail: string
   userRole?: string
   notificationCount?: number
+  unreadSupport?: number
 }
 
-export function AdminShell({ children, userName, userEmail, userRole, notificationCount = 0 }: Props) {
+export function AdminShell({ children, userName, userEmail, userRole, notificationCount = 0, unreadSupport = 0 }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="min-h-screen flex" style={{ background: 'var(--color-background)' }}>
-      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} unreadSupport={unreadSupport} />
 
       <div className="flex-1 min-w-0 flex flex-col">
         <AdminHeader

@@ -20,15 +20,26 @@ import {
   User,
   Star,
   Activity,
+  MessageSquare,
+  type LucideIcon,
 } from 'lucide-react'
 import { Logo } from '@/components/shared/Logo'
 
 interface Props {
   isOpen: boolean
   onClose: () => void
+  unreadSupport?: number
 }
 
-const sections = [
+interface SidebarItem {
+  href: string
+  label: string
+  icon: LucideIcon
+  badge?: string
+  badgeKey?: string
+}
+
+const sections: Array<{ title: string; items: SidebarItem[] }> = [
   {
     title: 'OVERVIEW',
     items: [
@@ -59,6 +70,12 @@ const sections = [
     ],
   },
   {
+    title: 'SUPPORT',
+    items: [
+      { href: '/admin/conversations', label: 'Conversations', icon: MessageSquare, badgeKey: 'support' },
+    ],
+  },
+  {
     title: 'ANALYTICS & SYSTEM',
     items: [
       { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
@@ -69,7 +86,7 @@ const sections = [
   },
 ]
 
-export function AdminSidebar({ isOpen, onClose }: Props) {
+export function AdminSidebar({ isOpen, onClose, unreadSupport = 0 }: Props) {
   const pathname = usePathname()
 
   const isActive = (href: string) => {
@@ -144,6 +161,14 @@ export function AdminSidebar({ isOpen, onClose }: Props) {
                     >
                       <Icon size={15} style={{ color: active ? 'var(--color-primary)' : 'var(--color-text-muted)' }} />
                       <span className="flex-1 truncate">{item.label}</span>
+                      {(item as any).badgeKey === 'support' && unreadSupport > 0 && (
+                        <span
+                          className="text-[8px] font-bold px-1.5 py-0.2 rounded-full min-w-[18px] text-center"
+                          style={{ background: '#DC2626', color: 'white' }}
+                        >
+                          {unreadSupport > 99 ? '99+' : unreadSupport}
+                        </span>
+                      )}
                       {item.badge && (
                         <span
                           className="text-[8px] font-bold px-1.5 py-0.2 rounded"
