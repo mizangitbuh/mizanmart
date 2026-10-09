@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { logAudit } from '@/lib/audit'
+import { sendEmail } from '@/lib/email/client'
+import { reviewApprovedEmail } from '@/lib/email/templates/review-approved'
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -105,6 +107,60 @@ export async function PATCH(
         performed_at: new Date().toISOString(),
       },
     })
+  }
+
+  // ─── Review approved email (non-blocking, pending → approved only) ───
+  if (before.status === 'pending' && after.status === 'approved') {
+    try {
+      const { data: reviewer } = await auth.supabase
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', after.user_id)
+        .single()
+
+      const { data: product } = await auth.supabase
+        .from('products')
+        .select('name, slug')
+        .eq('id', after.product_id)
+        .single()
+
+      if (reviewer?.email && product?.name && product?.slug) {
+        const siteUrl =
+          process.env.NEXT_PUBLIC_SITE_URL ||
+          new URL(request.url).origin ||
+          'http://localhost:3000'
+
+        const { subject, html } = reviewApprovedEmail({
+          review: {
+            rating: after.rating,
+            title: after.title ?? null,
+            body: after.body ?? null,
+          },
+          product: {
+            name: product.name,
+            slug: product.slug,
+          },
+          customerName: reviewer.full_name ?? null,
+          siteUrl,
+        })
+
+        const result = await sendEmail({
+          to: reviewer.email,
+          subject,
+          html,
+          tags: [{ name: 'category', value: 'review-approved' }],
+        })
+
+        if (result.success) {
+          console.log(`[review-approved] Email sent: ${result.id}`)
+        } else {
+          console.error('[review-approved] Email failed:', result.error)
+        }
+      }
+    } catch (emailErr) {
+      // Never fail the review update because of email
+      console.error('[review-approved] Email exception:', emailErr)
+    }
   }
 
   return NextResponse.json({ success: true, review: after })
